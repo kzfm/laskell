@@ -1,0 +1,1 @@
+Search.setIndex({objects:{},terms:{index:1,laskel:1,welcom:1,titl:0,modul:1,search:1,indic:1,content:1,tabl:1,document:1,page:1},objtypes:{},titles:["&lt;no title&gt;","Welcome to laskell&#8217;s documentation!"],objnames:{},filenames:["README","index"]})
