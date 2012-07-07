@@ -3,15 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to laskell's documentation!
-===================================
+======================================
+ゆるふわHaskell (Light & Airy Haskell)
+======================================
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-
+   chatbot
+   pleac
 
 Indices and tables
 ==================
