@@ -27,24 +27,23 @@ Haskellで人工無脳をつくると面白そうなのでやってみること�
 ================
 
 最初は人工無能の基本であるオウム返しをさせてみます。ちなみにうちの三歳
-の息子も言ったことを繰り返すのでちょっとめんどくさいと思う時があります
-が、会話の発達段階には必要な事柄なんでしょう。
+の息子も言ったことを繰り返すの、でちょっとめんどくさいと思う時がありま
+すが、ヒトの会話の発達段階には必要なイベントなんでしょう。
 
 .. code-block:: haskell
 
     import System.Console.Readline
     
     main :: IO ()
-    main = do
-      repeatInput
-      where repeatInput = do
+    main = loop 
+      where loop = do
               maybeLine <- readline "> "
               case maybeLine of 
                 Nothing -> return ()
                 Just "quit" -> return ()
                 Just line -> do
                         putStrLn $ "monapo> " ++ line
-                        repeatInput
+                        loop
 
 上記のコードをmonapo.hsという名前で保存したら早速コンパイルしてみましょう
 
