@@ -61,10 +61,36 @@
 <h1>Haskellで人工無脳をつくろう<a class="headerlink" href="#haskell" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id1">
 <h2>はじめに<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>Haskellで人工無脳をつくると面白そうなのでやってみることにしました。Twitterのボットくらいにすることを目指します。</p>
+<p>Haskellで人工無脳をつくると面白そうなのでやってみることにしました。Twitterのボットくらいを目指します。</p>
 </div>
 <div class="section" id="id2">
-<h2>人工無脳の名前を考えよう<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<h2>Haskell開発環境を用意しよう<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="haskell-platform">
+<h3>Haskell Platformのインストール<a class="headerlink" href="#haskell-platform" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://hackage.haskell.org/platform/">Haskell Platform</a>から自分
+のOSに対応するものをダウンロードしてインストールすると、<a class="reference external" href="http://lambda.haskell.org/platform/doc/current/frames.html">一通りの開発環境</a>が揃います。</p>
+</div>
+<div class="section" id="cabal">
+<h3>cabalを使う<a class="headerlink" href="#cabal" title="Permalink to this headline">¶</a></h3>
+<p>cabalは<a class="reference external" href="http://hackage.haskell.org/packages/hackage.html">Hackage</a>のパッケージをインストールするためのツールです。
+これはいわゆるperlのcpanやpythonのeasy_installにあたるものなので、早めに覚えるべきコマンドです。先人の知恵を上手に取り入れて
+素早く開発するのはHaskellでも一緒です。</p>
+<p>Haskell Platformをインストールすれば使えるようになっているはずなので、
+早速コマンド入力用のユーザーインターフェースライブラリを導入してみます</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>cabal install readline
+</pre></div>
+</div>
+<p>幾つかのログ情報が端末に出力されて、インストールは終了すると思います。簡単ですね。</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>osxユーザーでreadlineをhomebrew経由でインストールしている場合は</p>
+<p>cabal install readline &#8211;configure-option=&#8211;with-readline-libraries=&#8221;/usr/local/Cellar/readline/6.2.2/lib&#8221; &#8211;configure-option=&#8211;with-readline-includes=&#8221;/usr/local/Cellar/readline/6.2.2/include&#8221;</p>
+<p class="last">でインストールできるはずです。readlineのバージョンは利用しているものに適宜読み替えてください。</p>
+</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>人工無脳の名前を考えよう<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <p>まずは人工無能の名前を考えなければいけませんよね。
 なんといっても、いい名前はモチベーションに必須ですからね。</p>
 <p>というわけであらかじめ考えておきました。</p>
@@ -76,24 +102,24 @@
 </ul>
 <p>なかなかいい名前です。</p>
 </div>
-<div class="section" id="id3">
-<h2>オウム返しさせる<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>オウム返しさせる<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <p>最初は人工無能の基本であるオウム返しをさせてみます。ちなみにうちの三歳
-の息子も言ったことを繰り返すのでちょっとめんどくさいと思う時があります
-が、会話の発達段階には必要な事柄なんでしょう。</p>
+の息子も言ったことを繰り返すの、でちょっとめんどくさいと思う時がありま
+すが、ヒトの会話の発達段階には必要なイベントなんでしょう。</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Console.Readline</span>
 
 <span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
 <span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
-  <span class="n">repeatInput</span>
-  <span class="kr">where</span> <span class="n">repeatInput</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">loop</span>
+  <span class="kr">where</span> <span class="n">loop</span> <span class="ow">=</span> <span class="kr">do</span>
           <span class="n">maybeLine</span> <span class="ow">&lt;-</span> <span class="n">readline</span> <span class="s">&quot;&gt; &quot;</span>
           <span class="kr">case</span> <span class="n">maybeLine</span> <span class="kr">of</span>
             <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
             <span class="kt">Just</span> <span class="s">&quot;quit&quot;</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
             <span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
                     <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">line</span>
-                    <span class="n">repeatInput</span>
+                    <span class="n">loop</span>
 </pre></div>
 </div>
 <p>上記のコードをmonapo.hsという名前で保存したら早速コンパイルしてみましょう</p>
@@ -101,12 +127,6 @@
 <span class="o">[</span>1 of 1<span class="o">]</span> Compiling Main             <span class="o">(</span> monapo.hs, monapo.o <span class="o">)</span>
 Linking monapo ...
 </pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p>osxユーザーでreadlineをhomebrew経由でインストールしている場合は</p>
-<p>cabal install readline &#8211;configure-option=&#8211;with-readline-libraries=&#8221;/usr/local/Cellar/readline/6.2.2/lib&#8221; &#8211;configure-option=&#8211;with-readline-includes=&#8221;/usr/local/Cellar/readline/6.2.2/include&#8221;</p>
-<p class="last">でインストールできるはずです。readlineのバージョンは利用しているものに適宜読み替えてください。</p>
 </div>
 <p>無事コンパイルできたら、早速実行してみましょう。あいさつからはじめて、
 とりあえず近所の民主党候補のポスターで覚えていたものをオウム返しさせて
@@ -133,8 +153,13 @@ monapo&gt; たむけん参上！
   <ul>
 <li><a class="reference internal" href="#">Haskellで人工無脳をつくろう</a><ul>
 <li><a class="reference internal" href="#id1">はじめに</a></li>
-<li><a class="reference internal" href="#id2">人工無脳の名前を考えよう</a></li>
-<li><a class="reference internal" href="#id3">オウム返しさせる</a></li>
+<li><a class="reference internal" href="#id2">Haskell開発環境を用意しよう</a><ul>
+<li><a class="reference internal" href="#haskell-platform">Haskell Platformのインストール</a></li>
+<li><a class="reference internal" href="#cabal">cabalを使う</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">人工無脳の名前を考えよう</a></li>
+<li><a class="reference internal" href="#id6">オウム返しさせる</a></li>
 </ul>
 </li>
 </ul>
