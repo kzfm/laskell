@@ -5,7 +5,43 @@
 はじめに
 ========
 
-Haskellで人工無脳をつくると面白そうなのでやってみることにしました。Twitterのボットくらいにすることを目指します。
+Haskellで人工無脳をつくると面白そうなのでやってみることにしました。Twitterのボットくらいを目指します。
+
+Haskell開発環境を用意しよう
+===========================
+
+Haskell Platformのインストール
+------------------------------
+
+\ `Haskell Platform <http://hackage.haskell.org/platform/>`_\ から自分
+のOSに対応するものをダウンロードしてインストールすると、\ `一通りの開発環境 <http://lambda.haskell.org/platform/doc/current/frames.html>`_\ 
+が揃います。
+
+cabalを使う
+-----------
+
+cabalは\ `Hackage <http://hackage.haskell.org/packages/hackage.html>`_\ のパッケージをインストールするためのツールです。
+これはいわゆるperlのcpanやpythonのeasy_installにあたるものなので、早めに覚えるべきコマンドです。先人の知恵を上手に取り入れて
+素早く開発するのはHaskellでも一緒です。
+
+Haskell Platformをインストールすれば使えるようになっているはずなので、
+早速コマンド入力用のユーザーインターフェースライブラリを導入してみます
+
+.. code-block:: sh
+
+   $ cabal install readline
+
+幾つかのログ情報が端末に出力されて、インストールは終了すると思います。簡単ですね。
+
+.. note::
+
+   osxユーザーでreadlineをhomebrew経由でインストールしている場合は
+   
+   cabal install readline \
+   --configure-option=--with-readline-libraries="/usr/local/Cellar/readline/6.2.2/lib" \
+   --configure-option=--with-readline-includes="/usr/local/Cellar/readline/6.2.2/include"
+   
+   でインストールできるはずです。readlineのバージョンは利用しているものに適宜読み替えてください。
 
 人工無脳の名前を考えよう
 ========================
@@ -52,16 +88,6 @@ Haskellで人工無脳をつくると面白そうなのでやってみること�
    $ ghc --make monapo
    [1 of 1] Compiling Main             ( monapo.hs, monapo.o )
    Linking monapo ...
-
-.. note::
-
-   osxユーザーでreadlineをhomebrew経由でインストールしている場合は
-   
-   cabal install readline \
-   --configure-option=--with-readline-libraries="/usr/local/Cellar/readline/6.2.2/lib" \
-   --configure-option=--with-readline-includes="/usr/local/Cellar/readline/6.2.2/include"
-   
-   でインストールできるはずです。readlineのバージョンは利用しているものに適宜読み替えてください。
 
 無事コンパイルできたら、早速実行してみましょう。あいさつからはじめて、
 とりあえず近所の民主党候補のポスターで覚えていたものをオウム返しさせて
