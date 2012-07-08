@@ -247,3 +247,4 @@ texinfo_documents = [
 
 sphinx_to_github = True
 sphinx_to_github_verbose = True
+#todo_include_todos = True

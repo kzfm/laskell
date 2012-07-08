@@ -2,6 +2,9 @@
  HaskellでPLEAC (todo)
 =======================
 
+1-6章は既に\ `PLEAC-Haskell <http://pleac.sourceforge.net/pleac_haskell/index.html>`_\ にあるのでそちらを参照してください。
+
+もとのレシピ(perl)は\ `PLEAC <http://www.sarinaga.com/progtoy/perlcookbooklink.html>`_\ を参照のこと
 
 7 章    ファイルアクセス
 ========================
