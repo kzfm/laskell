@@ -139,6 +139,50 @@ monapo&gt; ごうしでごー
 monapo&gt; たむけん参上！
 </pre></div>
 </div>
+<div class="section" id="id7">
+<h3>コードの説明<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>まずはモジュールをインポートします。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Console.Readline</span>
+</pre></div>
+</div>
+<p>続いてmainの定義を書きます。</p>
+<ul class="simple">
+<li>mainはloopっていう関数です</li>
+<li>loopっていう関数はreadlineで入力を受け付けて、入力が</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li>何もない場合と&#8221;quit&#8221;という文字列の場合はreturnする</li>
+<li>それ以外の場合はオウム返ししてloop関数を実行する</li>
+</ul>
+</div></blockquote>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="n">loop</span>
+  <span class="kr">where</span> <span class="n">loop</span> <span class="ow">=</span> <span class="kr">do</span>
+          <span class="n">maybeLine</span> <span class="ow">&lt;-</span> <span class="n">readline</span> <span class="s">&quot;&gt; &quot;</span>
+          <span class="kr">case</span> <span class="n">maybeLine</span> <span class="kr">of</span>
+            <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+            <span class="kt">Just</span> <span class="s">&quot;quit&quot;</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+            <span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                    <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">line</span>
+                    <span class="n">loop</span>
+</pre></div>
+</div>
+<p>ポイントはdoです。do構文を使うと関数が順番に実行されるようになります。
+よくある手続き型のスクリプト言語の感覚で書けるようになります。それがdo
+です。</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">doはmoco&#8217;sキッチンにおけるオリーブオイルのようなものだと覚えておけば
+安心です。怖がらずなんにでもかけてみよう!</p>
+</div>
+<p>下の例だとputStrLnした後にloopを実行してます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+       <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">line</span>
+       <span class="n">loop</span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -158,7 +202,10 @@ monapo&gt; たむけん参上！
 </ul>
 </li>
 <li><a class="reference internal" href="#id5">人工無脳の名前を考えよう</a></li>
-<li><a class="reference internal" href="#id6">オウム返しさせる</a></li>
+<li><a class="reference internal" href="#id6">オウム返しさせる</a><ul>
+<li><a class="reference internal" href="#id7">コードの説明</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

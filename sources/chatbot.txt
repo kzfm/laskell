@@ -104,5 +104,49 @@ Haskell Platformをインストールすれば使えるようになっている�
    monapo> たむけん参上！
 
 
-.. todo:: コードの説明
+コードの説明
+------------
+
+まずはモジュールをインポートします。
+
+.. code-block:: haskell
+
+    import System.Console.Readline
+
+続いてmainの定義を書きます。
+
+- mainはloopっていう関数です
+- loopっていう関数はreadlineで入力を受け付けて、入力が
+ - 何もない場合と"quit"という文字列の場合はreturnする
+ - それ以外の場合はオウム返ししてloop関数を実行する
+
+.. code-block:: haskell
+
+    main :: IO ()
+    main = loop 
+      where loop = do
+              maybeLine <- readline "> "
+              case maybeLine of 
+                Nothing -> return ()
+                Just "quit" -> return ()
+                Just line -> do
+                        putStrLn $ "monapo> " ++ line
+                        loop
+
+ポイントはdoです。do構文を使うと関数が順番に実行されるようになります。
+よくある手続き型のスクリプト言語の感覚で書けるようになります。それがdo
+です。
+
+.. note::
+
+   doはmoco'sキッチンにおけるオリーブオイルのようなものだと覚えておけば
+   安心です。怖がらずなんにでもかけてみよう!
+
+下の例だとputStrLnした後にloopを実行してます。
+
+.. code-block:: haskell
+
+   Just line -> do
+          putStrLn $ "monapo> " ++ line
+          loop
 
