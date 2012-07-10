@@ -85,6 +85,20 @@
 レシピ8.2 ファイルの行数（段落数、レコード数）をカウントする
 -------------------------------------------------------------
 
+ `8.2. Counting Lines (or Paragraphs or Records) in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_03.htm>`_
+
+applicative
+
+.. code-block:: haskell
+
+   countlines = (length . lines) <$> readFile
+
+Monad
+
+.. code-block:: haskell
+
+   countlines = liftM (length . lines) $ readFile
+
 レシピ8.3 ファイル内のすべての単語を処理する
 ---------------------------------------------
 
