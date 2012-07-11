@@ -117,6 +117,7 @@ Haskell Platformをインストールすれば使えるようになっている�
 
 - mainはloopっていう関数です
 - loopっていう関数はreadlineで入力を受け付けて、入力が
+
  - 何もない場合と"quit"という文字列の場合はreturnする
  - それ以外の場合はオウム返ししてloop関数を実行する
 
@@ -140,7 +141,7 @@ Haskell Platformをインストールすれば使えるようになっている�
 .. note::
 
    doはmoco'sキッチンにおけるオリーブオイルのようなものだと覚えておけば
-   安心です。怖がらずなんにでもかけてみよう!
+   安心です。怖がらずなんにでもかけてみよう!(※ただしメインに限る)
 
 下の例だとputStrLnした後にloopを実行してます。
 
@@ -149,4 +150,114 @@ Haskell Platformをインストールすれば使えるようになっている�
    Just line -> do
           putStrLn $ "monapo> " ++ line
           loop
+
+ランダムに応答を返す
+====================
+
+オウム返しはうまくいったので、続いて予め決められた返事のリストからラン
+ダムに一つ選んで返すようにしてみましょう。
+
+本物のHaskellerはHoogleを使う
+-----------------------------
+
+コードの戦略としては応答候補のリストを用意して、これからランダムに一つ
+選択したいわけですが、Haskellでランダムを扱うにはどうすればいいのでしょう?
+
+.. code-block:: haskell
+   :emphasize-lines: 16
+
+    import System.Console.Readline
+    
+    responses = [
+     "ジョジョ立ちしてみて",
+     "こんにちわ",
+     "すごいHaskellたのしく学んでますか？"]
+    
+    main :: IO ()
+    main = loop
+      where loop = do
+              maybeLine <- readline "> "
+              case maybeLine of
+                Nothing -> return ()
+                Just "quit" -> return ()
+                Just line -> do
+                     putStrLn $ "monapo> " -- responseをどうやって選択するのか?
+                     loop
+
+そんな時は\ `Hoogle <http://www.haskell.org/hoogle/>`_\ で検索してみま
+しょう。randomというキーワードで検索すると\ `System.Random <http://hackage.haskell.org/packages/archive/random/latest/doc/html/System-Random.html>`_\ 
+がヒットするはずです。これは求めるものに近そうなのできちんと見ていきます。
+
+.. note::
+
+   cabal install でhoogleをインストールするとCUIで検索できるようになって便利なので入れておきましょう
+
+randomパッケージの中から出力の型がIO [何か]というものを探します。なぜIOがついているものを探すかというとmain関数の型の定義が
+
+.. code-block:: haskell
+
+   main :: IO ()
+
+となっているからです。\ **IOというラベルの張っている型はIOというラベル
+の張っている型を出力する関数じゃないとつなげることができない**\ と覚え
+ておけばいいでしょう。そんな感じで見ていくとgetStdRandomというものが見
+つかりました。確認のために型を見てみると
+
+.. code-block:: haskell
+
+   getStdRandom :: (StdGen -> (a, StdGen)) -> IO a
+
+となっています。StdGenとは一体何だ?理解するのに大変な予感がするんだ
+が、、、、と気になるところですが、すぐ後ろに簡単な使い方が載っているの
+で見てみると、
+
+.. code-block:: haskell
+
+   rollDice :: IO Int
+   rollDice = getStdRandom (randomR (1,6))
+
+ズバリな感じで、指定した範囲の数字をランダムに出力する関数みたいです。
+これをちょっとモディファイすれば使えそうです。というわけで結局StdGenを
+深追いしなくて良くなりましたね。あとはうまく貼りあわせればいいだけなの
+で出来上がったコードを載せておきます。
+
+.. code-block:: haskell
+
+    import System.Console.Readline
+    import System.Random
+    
+    randomNumGen :: IO Int
+    randomNumGen = getStdRandom (randomR (0, (length response)-1))
+    
+    response = [
+     "ジョジョ立ちしてみて",
+     "こんにちわ",
+     "すごいHaskellたのしく学んでますか？"]
+    
+    main :: IO ()
+    main = loop
+      where loop = do
+              maybeLine <- readline "> "
+              case maybeLine of
+                Nothing -> return ()
+                Just "quit" -> return ()
+                Just line -> do
+                     index <- randomNumGen
+                     putStrLn $ "monapo> " ++ response !! index
+                     loop
+
+コードの説明
+------------
+
+responseでリストを定義してrandomNumGenでリストのインデックスの整数値が
+ランダムに選ばれるようにしています。(関数の型がIO Intであることに気がつ
+いてください)。あとはmain関数中で、ランダムに選ばれたindex値を用いて
+responseの中から応答すべき文字列を選択しています。
+
+.. code-block:: haskell
+
+   index <- randomNumGen
+   putStrLn $ "monapo> " ++ response !! index
+
+
 

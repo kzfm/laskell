@@ -174,12 +174,104 @@ monapo&gt; たむけん参上！
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">doはmoco&#8217;sキッチンにおけるオリーブオイルのようなものだと覚えておけば
-安心です。怖がらずなんにでもかけてみよう!</p>
+安心です。怖がらずなんにでもかけてみよう!(※ただしメインに限る)</p>
 </div>
 <p>下の例だとputStrLnした後にloopを実行してます。</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
        <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">line</span>
        <span class="n">loop</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>ランダムに応答を返す<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<p>オウム返しはうまくいったので、続いて予め決められた返事のリストからラン
+ダムに一つ選んで返すようにしてみましょう。</p>
+<div class="section" id="haskellerhoogle">
+<h3>本物のHaskellerはHoogleを使う<a class="headerlink" href="#haskellerhoogle" title="Permalink to this headline">¶</a></h3>
+<p>コードの戦略としては応答候補のリストを用意して、これからランダムに一つ
+選択したいわけですが、Haskellでランダムを扱うにはどうすればいいのでしょう?</p>
+<div class="highlight-haskell"><div class="highlight"><pre> <span class="kr">import</span> <span class="nn">System.Console.Readline</span>
+
+ <span class="n">responses</span> <span class="ow">=</span> <span class="p">[</span>
+  <span class="s">&quot;ジョジョ立ちしてみて&quot;</span><span class="p">,</span>
+  <span class="s">&quot;こんにちわ&quot;</span><span class="p">,</span>
+  <span class="s">&quot;すごいHaskellたのしく学んでますか？&quot;</span><span class="p">]</span>
+
+ <span class="n">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+ <span class="n">main</span> <span class="ow">=</span> <span class="n">loop</span>
+   <span class="kr">where</span> <span class="n">loop</span> <span class="ow">=</span> <span class="kr">do</span>
+           <span class="n">maybeLine</span> <span class="ow">&lt;-</span> <span class="n">readline</span> <span class="s">&quot;&gt; &quot;</span>
+           <span class="kr">case</span> <span class="n">maybeLine</span> <span class="kr">of</span>
+             <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+             <span class="kt">Just</span> <span class="s">&quot;quit&quot;</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+             <span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+<span class="hll">                  <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="c1">-- responseをどうやって選択するのか?</span>
+</span>                  <span class="n">loop</span>
+</pre></div>
+</div>
+<p>そんな時は<a class="reference external" href="http://www.haskell.org/hoogle/">Hoogle</a>で検索してみま
+しょう。randomというキーワードで検索すると<a class="reference external" href="http://hackage.haskell.org/packages/archive/random/latest/doc/html/System-Random.html">System.Random</a>がヒットするはずです。これは求めるものに近そうなのできちんと見ていきます。</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">cabal install でhoogleをインストールするとCUIで検索できるようになって便利なので入れておきましょう</p>
+</div>
+<p>randomパッケージの中から出力の型がIO [何か]というものを探します。なぜIOがついているものを探すかというとmain関数の型の定義が</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+</pre></div>
+</div>
+<p>となっているからです。<strong>IOというラベルの張っている型はIOというラベル
+の張っている型を出力する関数じゃないとつなげることができない</strong>と覚え
+ておけばいいでしょう。そんな感じで見ていくとgetStdRandomというものが見
+つかりました。確認のために型を見てみると</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">getStdRandom</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">StdGen</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="kt">StdGen</span><span class="p">))</span> <span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="n">a</span>
+</pre></div>
+</div>
+<p>となっています。StdGenとは一体何だ?理解するのに大変な予感がするんだ
+が、、、、と気になるところですが、すぐ後ろに簡単な使い方が載っているの
+で見てみると、</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">rollDice</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">rollDice</span> <span class="ow">=</span> <span class="n">getStdRandom</span> <span class="p">(</span><span class="n">randomR</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>ズバリな感じで、指定した範囲の数字をランダムに出力する関数みたいです。
+これをちょっとモディファイすれば使えそうです。というわけで結局StdGenを
+深追いしなくて良くなりましたね。あとはうまく貼りあわせればいいだけなの
+で出来上がったコードを載せておきます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Console.Readline</span>
+<span class="kr">import</span> <span class="nn">System.Random</span>
+
+<span class="nf">randomNumGen</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">randomNumGen</span> <span class="ow">=</span> <span class="n">getStdRandom</span> <span class="p">(</span><span class="n">randomR</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">length</span> <span class="n">response</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="nf">response</span> <span class="ow">=</span> <span class="p">[</span>
+ <span class="s">&quot;ジョジョ立ちしてみて&quot;</span><span class="p">,</span>
+ <span class="s">&quot;こんにちわ&quot;</span><span class="p">,</span>
+ <span class="s">&quot;すごいHaskellたのしく学んでますか？&quot;</span><span class="p">]</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="n">loop</span>
+  <span class="kr">where</span> <span class="n">loop</span> <span class="ow">=</span> <span class="kr">do</span>
+          <span class="n">maybeLine</span> <span class="ow">&lt;-</span> <span class="n">readline</span> <span class="s">&quot;&gt; &quot;</span>
+          <span class="kr">case</span> <span class="n">maybeLine</span> <span class="kr">of</span>
+            <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+            <span class="kt">Just</span> <span class="s">&quot;quit&quot;</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+            <span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                 <span class="n">index</span> <span class="ow">&lt;-</span> <span class="n">randomNumGen</span>
+                 <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">response</span> <span class="o">!!</span> <span class="n">index</span>
+                 <span class="n">loop</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id9">
+<h3>コードの説明<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>responseでリストを定義してrandomNumGenでリストのインデックスの整数値が
+ランダムに選ばれるようにしています。(関数の型がIO Intであることに気がつ
+いてください)。あとはmain関数中で、ランダムに選ばれたindex値を用いて
+responseの中から応答すべき文字列を選択しています。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">index</span> <span class="ow">&lt;-</span> <span class="n">randomNumGen</span>
+<span class="nf">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">response</span> <span class="o">!!</span> <span class="n">index</span>
 </pre></div>
 </div>
 </div>
@@ -204,6 +296,11 @@ monapo&gt; たむけん参上！
 <li><a class="reference internal" href="#id5">人工無脳の名前を考えよう</a></li>
 <li><a class="reference internal" href="#id6">オウム返しさせる</a><ul>
 <li><a class="reference internal" href="#id7">コードの説明</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id8">ランダムに応答を返す</a><ul>
+<li><a class="reference internal" href="#haskellerhoogle">本物のHaskellerはHoogleを使う</a></li>
+<li><a class="reference internal" href="#id9">コードの説明</a></li>
 </ul>
 </li>
 </ul>
