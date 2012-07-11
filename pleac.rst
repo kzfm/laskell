@@ -82,6 +82,28 @@
 レシピ8.1 継続文字のある行を読む
 ---------------------------------
 
+`8.1. Reading Lines with Continuation Characters <http://docstore.mik.ua/orelly/perl/cookbook/ch08_02.htm>`_ 
+
+もとのレシピは行ごとに読んで末尾にバックスラッシュついてるかチェックし
+てるのだけど、書いたコードは\\nを探して無視するようになっている。
+
+.. code-block:: haskell
+
+    import System.Environment
+    
+    ccappend :: String -> String
+    ccappend [] = []
+    ccappend (c:[]) = [c] 
+    ccappend (c1:c2:cs)
+        | c1 == '\\' && c2 == '\n' = ccappend (cs)
+        | otherwise         = c1:ccappend (c2:cs)
+    
+    main = do
+      args <- getArgs
+      content <- readFile (args!!0)
+      putStr $ ccappend content
+
+
 レシピ8.2 ファイルの行数（段落数、レコード数）をカウントする
 -------------------------------------------------------------
 

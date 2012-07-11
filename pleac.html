@@ -130,6 +130,24 @@
 <h2>8 章    ファイルコンテンツ<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id21">
 <h3>レシピ8.1 継続文字のある行を読む<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_02.htm">8.1. Reading Lines with Continuation Characters</a></p>
+<p>もとのレシピは行ごとに読んで末尾にバックスラッシュついてるかチェックし
+てるのだけど、書いたコードは\nを探して無視するようになっている。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+
+<span class="nf">ccappend</span> <span class="ow">::</span> <span class="kt">String</span> <span class="ow">-&gt;</span> <span class="kt">String</span>
+<span class="nf">ccappend</span> <span class="kt">[]</span> <span class="ow">=</span> <span class="kt">[]</span>
+<span class="nf">ccappend</span> <span class="p">(</span><span class="n">c</span><span class="kt">:[]</span><span class="p">)</span> <span class="ow">=</span> <span class="p">[</span><span class="n">c</span><span class="p">]</span>
+<span class="nf">ccappend</span> <span class="p">(</span><span class="n">c1</span><span class="kt">:</span><span class="n">c2</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span>
+    <span class="o">|</span> <span class="n">c1</span> <span class="o">==</span> <span class="sc">&#39;</span><span class="se">\\</span><span class="sc">&#39;</span> <span class="o">&amp;&amp;</span> <span class="n">c2</span> <span class="o">==</span> <span class="sc">&#39;</span><span class="se">\n</span><span class="sc">&#39;</span> <span class="ow">=</span> <span class="n">ccappend</span> <span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+    <span class="o">|</span> <span class="n">otherwise</span>         <span class="ow">=</span> <span class="n">c1</span><span class="kt">:</span><span class="n">ccappend</span> <span class="p">(</span><span class="n">c2</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">args</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">content</span> <span class="ow">&lt;-</span> <span class="n">readFile</span> <span class="p">(</span><span class="n">args</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span>
+  <span class="n">putStr</span> <span class="o">$</span> <span class="n">ccappend</span> <span class="n">content</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id22">
 <h3>レシピ8.2 ファイルの行数（段落数、レコード数）をカウントする<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
