@@ -107,7 +107,7 @@
 レシピ8.2 ファイルの行数（段落数、レコード数）をカウントする
 -------------------------------------------------------------
 
- `8.2. Counting Lines (or Paragraphs or Records) in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_03.htm>`_
+`8.2. Counting Lines (or Paragraphs or Records) in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_03.htm>`_
 
 applicative
 
@@ -123,6 +123,19 @@ Monad
 
 レシピ8.3 ファイル内のすべての単語を処理する
 ---------------------------------------------
+
+`8.3. Processing Every Word in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_04.htm>`_
+
+words関数で単語のリストに分解してmapすればいい。
+
+.. code-block:: haskell
+
+    import System.Environment
+    
+    main = do
+      args <- getArgs
+      content <- readFile (args!!0)
+      print $ words content
 
 レシピ8.4 ファイルを行単位または段落単位で逆向きに読む
 -------------------------------------------------------
