@@ -130,7 +130,7 @@
 <h2>8 章    ファイルコンテンツ<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id21">
 <h3>レシピ8.1 継続文字のある行を読む<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_02.htm">8.1. Reading Lines with Continuation Characters</a></p>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_02.htm">Reading Lines with Continuation Characters</a></p>
 <p>もとのレシピは行ごとに読んで末尾にバックスラッシュついてるかチェックし
 てるのだけど、書いたコードは\nを探して無視するようになっている。</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
@@ -151,7 +151,7 @@
 </div>
 <div class="section" id="id22">
 <h3>レシピ8.2 ファイルの行数（段落数、レコード数）をカウントする<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_03.htm">8.2. Counting Lines (or Paragraphs or Records) in a File</a></p>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_03.htm">Counting Lines (or Paragraphs or Records) in a File</a></p>
 <p>applicative</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="nf">countlines</span> <span class="ow">=</span> <span class="p">(</span><span class="n">length</span> <span class="o">.</span> <span class="n">lines</span><span class="p">)</span> <span class="o">&lt;$&gt;</span> <span class="n">readFile</span>
 </pre></div>
@@ -163,7 +163,7 @@
 </div>
 <div class="section" id="id23">
 <h3>レシピ8.3 ファイル内のすべての単語を処理する<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_04.htm">8.3. Processing Every Word in a File</a></p>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_04.htm">Processing Every Word in a File</a></p>
 <p>words関数で単語のリストに分解してmapすればいい。</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
 
@@ -176,6 +176,16 @@
 </div>
 <div class="section" id="id24">
 <h3>レシピ8.4 ファイルを行単位または段落単位で逆向きに読む<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_05.htm">Reading a File Backwards by Line or Paragraph</a></p>
+<p>reverseする</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">args</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">content</span> <span class="ow">&lt;-</span> <span class="n">readFile</span> <span class="p">(</span><span class="n">args</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span>
+  <span class="n">print</span> <span class="o">$</span> <span class="n">reverse</span> <span class="o">.</span> <span class="n">lines</span> <span class="o">$</span> <span class="n">content</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id25">
 <h3>レシピ8.5 成長するファイルを追いかけながら読む<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>

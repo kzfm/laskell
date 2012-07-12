@@ -82,7 +82,7 @@
 レシピ8.1 継続文字のある行を読む
 ---------------------------------
 
-`8.1. Reading Lines with Continuation Characters <http://docstore.mik.ua/orelly/perl/cookbook/ch08_02.htm>`_ 
+`Reading Lines with Continuation Characters <http://docstore.mik.ua/orelly/perl/cookbook/ch08_02.htm>`_ 
 
 もとのレシピは行ごとに読んで末尾にバックスラッシュついてるかチェックし
 てるのだけど、書いたコードは\\nを探して無視するようになっている。
@@ -107,7 +107,7 @@
 レシピ8.2 ファイルの行数（段落数、レコード数）をカウントする
 -------------------------------------------------------------
 
-`8.2. Counting Lines (or Paragraphs or Records) in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_03.htm>`_
+`Counting Lines (or Paragraphs or Records) in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_03.htm>`_
 
 applicative
 
@@ -124,7 +124,7 @@ Monad
 レシピ8.3 ファイル内のすべての単語を処理する
 ---------------------------------------------
 
-`8.3. Processing Every Word in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_04.htm>`_
+`Processing Every Word in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_04.htm>`_
 
 words関数で単語のリストに分解してmapすればいい。
 
@@ -139,6 +139,19 @@ words関数で単語のリストに分解してmapすればいい。
 
 レシピ8.4 ファイルを行単位または段落単位で逆向きに読む
 -------------------------------------------------------
+
+`Reading a File Backwards by Line or Paragraph <http://docstore.mik.ua/orelly/perl/cookbook/ch08_05.htm>`_ 
+
+reverseする
+
+.. code-block:: haskell
+
+   import System.Environment
+   
+   main = do
+     args <- getArgs
+     content <- readFile (args!!0)
+     print $ reverse . lines $ content
 
 レシピ8.5 成長するファイルを追いかけながら読む
 -----------------------------------------------
