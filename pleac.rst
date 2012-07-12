@@ -85,7 +85,7 @@
 `Reading Lines with Continuation Characters <http://docstore.mik.ua/orelly/perl/cookbook/ch08_02.htm>`_ 
 
 もとのレシピは行ごとに読んで末尾にバックスラッシュついてるかチェックし
-てるのだけど、書いたコードは\\nを探して無視するようになっている。
+てるのだけど、書いたコードは\\\\nを探して無視するようになっている。
 
 .. code-block:: haskell
 
@@ -156,7 +156,7 @@ reverseする
 レシピ8.5 成長するファイルを追いかけながら読む
 -----------------------------------------------
 
-`8.5. Trailing a Growing File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_06.htm>`_ 
+`Trailing a Growing File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_06.htm>`_ 
 
 ファイルハンドルがEOFだったらthreadDelayで一秒待ってループ。そうじゃな
 かったら文字を読み込んで出力
