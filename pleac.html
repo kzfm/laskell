@@ -179,6 +179,27 @@
 </div>
 <div class="section" id="id25">
 <h3>レシピ8.5 成長するファイルを追いかけながら読む<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_06.htm">8.5. Trailing a Growing File</a></p>
+<p>ファイルハンドルがEOFだったらthreadDelayで一秒待ってループ。そうじゃな
+かったら文字を読み込んで出力</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.IO</span>
+<span class="kr">import</span> <span class="nn">System.Environment</span>
+<span class="kr">import</span> <span class="nn">Control.Concurrent</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">args</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">h</span> <span class="ow">&lt;-</span> <span class="n">openFile</span> <span class="p">(</span><span class="n">args</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span> <span class="kt">ReadMode</span>
+  <span class="n">loop</span> <span class="n">h</span>
+  <span class="kr">where</span> <span class="n">loop</span> <span class="n">h</span> <span class="ow">=</span> <span class="kr">do</span>
+          <span class="n">end</span> <span class="ow">&lt;-</span> <span class="n">hIsEOF</span> <span class="n">h</span>
+          <span class="kr">if</span> <span class="n">end</span> <span class="kr">then</span> <span class="p">(</span><span class="n">threadDelay</span> <span class="mi">1000000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">loop</span> <span class="n">h</span>
+          <span class="kr">else</span> <span class="kr">do</span>
+            <span class="n">c</span> <span class="ow">&lt;-</span> <span class="n">hGetChar</span> <span class="n">h</span>
+            <span class="n">putChar</span> <span class="n">c</span>
+            <span class="n">hFlush</span> <span class="n">stdout</span>
+            <span class="n">loop</span> <span class="n">h</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id26">
 <h3>レシピ8.6 ファイルから行をランダムに取り出す<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>

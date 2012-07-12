@@ -143,6 +143,30 @@ words関数で単語のリストに分解してmapすればいい。
 レシピ8.5 成長するファイルを追いかけながら読む
 -----------------------------------------------
 
+`8.5. Trailing a Growing File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_06.htm>`_ 
+
+ファイルハンドルがEOFだったらthreadDelayで一秒待ってループ。そうじゃな
+かったら文字を読み込んで出力
+
+.. code-block:: haskell
+
+    import System.IO
+    import System.Environment
+    import Control.Concurrent
+    
+    main = do
+      args <- getArgs
+      h <- openFile (args!!0) ReadMode
+      loop h
+      where loop h = do 
+              end <- hIsEOF h
+              if end then (threadDelay 1000000) >> loop h
+              else do
+                c <- hGetChar h
+                putChar c
+                hFlush stdout
+                loop h
+
 レシピ8.6 ファイルから行をランダムに取り出す
 ---------------------------------------------
 
