@@ -183,11 +183,64 @@ reverseする
 レシピ8.6 ファイルから行をランダムに取り出す
 ---------------------------------------------
 
+`Picking a Random Line from a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_07.htm>`_ 
+
+一行をランダムに取り出す。アルゴリズムはよく知られたやつ。
+
+.. code-block:: haskell
+
+    import System.Environment
+    import System.Random
+    import Control.Applicative
+    
+    randomNumGen :: Int -> IO Int
+    randomNumGen n = getStdRandom (randomR (0, n))
+    
+    choiceLine :: String -> [(Int, String)] -> IO String
+    choiceLine s [] = return s
+    choiceLine s ((n, line):cs) = do
+      n' <- randomNumGen n
+      if n' < 1 then choiceLine line cs
+      else choiceLine s cs
+    
+    main :: IO ()
+    main = do
+      args <- getArgs
+      choiced <- choiceLine "" =<< zip [1..] <$> lines <$> readFile (args!!0) 
+      putStrLn choiced
+
 レシピ8.7 ファイル内のすべての行をシャッフルしたい
 ---------------------------------------------------
 
+`Randomizing All Lines <http://docstore.mik.ua/orelly/perl/cookbook/ch08_08.htm>`_ 
+
+.. code-block:: haskell
+
+    import System.Environment
+    import System.Random.Shuffle
+    import Control.Applicative
+    
+    main :: IO ()
+    main = do
+      args <- getArgs
+      shuffled <- shuffleM =<< lines <$>  readFile (args!!0) 
+      mapM_ putStrLn shuffled
+
 レシピ8.8 ファイル内の特定の行を読み込む
 -----------------------------------------
+
+`Reading a Particular Line in a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_09.htm>`_ 
+
+.. code-block:: haskell
+
+    import System.Environment
+    import Control.Applicative
+    
+    main :: IO ()
+    main = do
+      (file:lineNum:_) <- getArgs
+      line <- flip (!!) (pred (read lineNum :: Int)) . lines <$>  readFile file 
+      putStrLn line
 
 レシピ8.9 可変長テキストフィールドを処理する
 ---------------------------------------------

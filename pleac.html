@@ -213,12 +213,58 @@
 </div>
 <div class="section" id="id26">
 <h3>レシピ8.6 ファイルから行をランダムに取り出す<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_07.htm">Picking a Random Line from a File</a></p>
+<p>一行をランダムに取り出す。アルゴリズムはよく知られたやつ。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+<span class="kr">import</span> <span class="nn">System.Random</span>
+<span class="kr">import</span> <span class="nn">Control.Applicative</span>
+
+<span class="nf">randomNumGen</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">randomNumGen</span> <span class="n">n</span> <span class="ow">=</span> <span class="n">getStdRandom</span> <span class="p">(</span><span class="n">randomR</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+<span class="nf">choiceLine</span> <span class="ow">::</span> <span class="kt">String</span> <span class="ow">-&gt;</span> <span class="p">[(</span><span class="kt">Int</span><span class="p">,</span> <span class="kt">String</span><span class="p">)]</span> <span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="kt">String</span>
+<span class="nf">choiceLine</span> <span class="n">s</span> <span class="kt">[]</span> <span class="ow">=</span> <span class="n">return</span> <span class="n">s</span>
+<span class="nf">choiceLine</span> <span class="n">s</span> <span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">n&#39;</span> <span class="ow">&lt;-</span> <span class="n">randomNumGen</span> <span class="n">n</span>
+  <span class="kr">if</span> <span class="n">n&#39;</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="kr">then</span> <span class="n">choiceLine</span> <span class="n">line</span> <span class="n">cs</span>
+  <span class="kr">else</span> <span class="n">choiceLine</span> <span class="n">s</span> <span class="n">cs</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">args</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">choiced</span> <span class="ow">&lt;-</span> <span class="n">choiceLine</span> <span class="s">&quot;&quot;</span> <span class="o">=&lt;&lt;</span> <span class="n">zip</span> <span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="p">]</span> <span class="o">&lt;$&gt;</span> <span class="n">lines</span> <span class="o">&lt;$&gt;</span> <span class="n">readFile</span> <span class="p">(</span><span class="n">args</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span>
+  <span class="n">putStrLn</span> <span class="n">choiced</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id27">
 <h3>レシピ8.7 ファイル内のすべての行をシャッフルしたい<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_08.htm">Randomizing All Lines</a></p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+<span class="kr">import</span> <span class="nn">System.Random.Shuffle</span>
+<span class="kr">import</span> <span class="nn">Control.Applicative</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">args</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">shuffled</span> <span class="ow">&lt;-</span> <span class="n">shuffleM</span> <span class="o">=&lt;&lt;</span> <span class="n">lines</span> <span class="o">&lt;$&gt;</span>  <span class="n">readFile</span> <span class="p">(</span><span class="n">args</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span>
+  <span class="n">mapM_</span> <span class="n">putStrLn</span> <span class="n">shuffled</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id28">
 <h3>レシピ8.8 ファイル内の特定の行を読み込む<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_09.htm">Reading a Particular Line in a File</a></p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+<span class="kr">import</span> <span class="nn">Control.Applicative</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">file</span><span class="kt">:</span><span class="n">lineNum</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">line</span> <span class="ow">&lt;-</span> <span class="n">flip</span> <span class="p">(</span><span class="o">!!</span><span class="p">)</span> <span class="p">(</span><span class="n">pred</span> <span class="p">(</span><span class="n">read</span> <span class="n">lineNum</span> <span class="ow">::</span> <span class="kt">Int</span><span class="p">))</span> <span class="o">.</span> <span class="n">lines</span> <span class="o">&lt;$&gt;</span>  <span class="n">readFile</span> <span class="n">file</span>
+  <span class="n">putStrLn</span> <span class="n">line</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id29">
 <h3>レシピ8.9 可変長テキストフィールドを処理する<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
