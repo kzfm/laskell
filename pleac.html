@@ -279,6 +279,17 @@
 </div>
 <div class="section" id="id30">
 <h3>レシピ8.10 ファイルの最後の行を削除する<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_11.htm">Removing the Last Line of a File</a></p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+<span class="kr">import</span> <span class="nn">Control.Applicative</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">file</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">lastElimLines</span> <span class="ow">&lt;-</span> <span class="p">(</span><span class="n">init</span> <span class="o">.</span> <span class="n">lines</span><span class="p">)</span> <span class="o">&lt;$&gt;</span>  <span class="n">readFile</span> <span class="n">file</span>
+  <span class="n">mapM_</span> <span class="n">putStrLn</span> <span class="n">lastElimLines</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id31">
 <h3>レシピ8.11 バイナリファイルを処理する<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>

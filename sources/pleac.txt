@@ -259,6 +259,19 @@ reverseする
 レシピ8.10 ファイルの最後の行を削除する
 ---------------------------------------
 
+`Removing the Last Line of a File <http://docstore.mik.ua/orelly/perl/cookbook/ch08_11.htm>`_ 
+
+.. code-block:: haskell
+
+    import System.Environment
+    import Control.Applicative
+    
+    main :: IO ()
+    main = do
+      (file:_) <- getArgs
+      lastElimLines <- (init . lines) <$>  readFile file 
+      mapM_ putStrLn lastElimLines
+
 レシピ8.11 バイナリファイルを処理する
 -------------------------------------
 
