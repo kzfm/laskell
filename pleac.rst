@@ -282,6 +282,22 @@ reverseする
 レシピ8.12 ランダムアクセスI/Oを使用する
 ----------------------------------------
 
+`Using Random-Access I/O <http://docstore.mik.ua/orelly/perl/cookbook/ch08_13.htm>`_ 
+
+`hSeek <http://hackage.haskell.org/packages/archive/base/latest/doc/html/System-IO.html#v:hSeek>`_\ をつかう
+
+.. code-block:: haskell
+
+    import System.IO
+    import System.Environment
+    
+    main = do
+      (file:num:_) <- getArgs
+      h <- openFile file ReadMode
+      hSeek h AbsoluteSeek (read num :: Integer)
+      c <- hGetChar h
+      putChar c
+
 レシピ8.13 ランダムアクセスファイルを更新する
 ---------------------------------------------
 

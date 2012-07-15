@@ -298,6 +298,19 @@
 </div>
 <div class="section" id="id32">
 <h3>レシピ8.12 ランダムアクセスI/Oを使用する<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch08_13.htm">Using Random-Access I/O</a></p>
+<p><a class="reference external" href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/System-IO.html#v:hSeek">hSeek</a>をつかう</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.IO</span>
+<span class="kr">import</span> <span class="nn">System.Environment</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">file</span><span class="kt">:</span><span class="n">num</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">h</span> <span class="ow">&lt;-</span> <span class="n">openFile</span> <span class="n">file</span> <span class="kt">ReadMode</span>
+  <span class="n">hSeek</span> <span class="n">h</span> <span class="kt">AbsoluteSeek</span> <span class="p">(</span><span class="n">read</span> <span class="n">num</span> <span class="ow">::</span> <span class="kt">Integer</span><span class="p">)</span>
+  <span class="n">c</span> <span class="ow">&lt;-</span> <span class="n">hGetChar</span> <span class="n">h</span>
+  <span class="n">putChar</span> <span class="n">c</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id33">
 <h3>レシピ8.13 ランダムアクセスファイルを更新する<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
