@@ -275,6 +275,10 @@ reverseする
 レシピ8.11 バイナリファイルを処理する
 -------------------------------------
 
+`Processing Binary Files <http://docstore.mik.ua/orelly/perl/cookbook/ch08_12.htm>`_ 
+
+`System.IO <http://hackage.haskell.org/packages/archive/base/latest/doc/html/System-IO.html>`_\ にhSetBinaryModeがある
+
 レシピ8.12 ランダムアクセスI/Oを使用する
 ----------------------------------------
 
