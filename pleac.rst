@@ -245,6 +245,17 @@ reverseする
 レシピ8.9 可変長テキストフィールドを処理する
 ---------------------------------------------
 
+`Processing Variable-Length Text Fields <http://docstore.mik.ua/orelly/perl/cookbook/ch08_10.htm>`_ 
+
+`Text.Regex <http://hackage.haskell.org/packages/archive/regex-compat/latest/doc/html/Text-Regex.html>`_\ のsplitRegex
+を使えばいい
+
+.. code-block:: haskell
+
+   import Text.Regex
+
+   splitRegex (mkRegex "\tb") "a\tba\tba\tbab" -- ["a","a","a","ab"]
+ 
 レシピ8.10 ファイルの最後の行を削除する
 ---------------------------------------
 
