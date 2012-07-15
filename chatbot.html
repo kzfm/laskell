@@ -276,6 +276,201 @@ responseの中から応答すべき文字列を選択しています。</p>
 </div>
 </div>
 </div>
+<div class="section" id="id10">
+<h2>感情モデルの作成<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id11">
+<h3>全体の流れ<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p>応答をランダムに返す人工無能ができたところで、応答の選び方をちょっと工
+夫したくなりますよね?</p>
+<p>例えば整数値を</p>
+<ul class="simple">
+<li>1:ハッピー (両手で大きくハートを描いた後、手をハートの形に組んで光波を放ち、敵に直撃させて浄化するテンション)</li>
+<li>0:ノーマル</li>
+<li>-1:ネガティブ (白紙の未来を黒く塗りつぶす感じで)</li>
+</ul>
+<p>という心理状態に見立てて、それぞれの値に応じたレスポンスを返すようにするのはどうでしょう?</p>
+<p>先ほどのresponseに関しては</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">response</span> <span class="ow">=</span> <span class="p">[</span>
+ <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;ピースソーグーーッド！&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;ウルトラハッピー&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;こんにちわ&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;すごいHaskellたのしく学んでますか？&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;お前それサバンナでも同じ事言えんの?&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;小町とHagexみすぎだろ&quot;</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>といった感じの定義を用意しておいて、(1,0,-1)の応答を返すようにfilter関
+数でフィルターすればいいですね。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">map</span> <span class="n">snd</span> <span class="o">$</span> <span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="n">fst</span> <span class="n">s</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="n">response</span> <span class="c1">-- タプルの最初が1である応答のリストを返す</span>
+</pre></div>
+</div>
+<p>こんな感じで選ばれた応答リストをランダムに返せばよさそうです。</p>
+</div>
+<div class="section" id="id12">
+<h3>ロボット生命体的なアイテムの登場です<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<p>続いて、monapoに心理状態を覚えさせることを考えます。ほめられたら1増やし
+、けなされたら1減らすことにします。</p>
+<p>IO ()にはStateTっていうプラグインみたいな感覚で付けられる型があるため、
+それを使うとなぜか状態が扱えます。TはTransformerの頭文字で、ロボット生
+命体のアレと一緒です。彼らも合体してより強くなるのでそれのイメージで理
+解しておけば大丈夫です。</p>
+<p>StateTを利用すると、doのなかでset,putが使えるようになります。これはま
+るでデータベースのAPIを操作している感覚でデータの出し入れが行えるように
+なるので、なんというかお手軽です。</p>
+<p>他に、心理状態がIntなのはコードリーディング的に問題あるだろうという私の
+特別なはからいによりEmotionという別名を付けておきました。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">type</span> <span class="kt">Emotion</span> <span class="ow">=</span> <span class="kt">Int</span>
+
+<span class="nf">happ</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">happ</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="kr">if</span> <span class="n">em</span><span class="o">+</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="kr">then</span> <span class="kr">do</span> <span class="n">put</span> <span class="mi">1</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="mi">1</span>
+  <span class="kr">else</span> <span class="kr">do</span> <span class="n">put</span> <span class="p">(</span><span class="n">em</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">em</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nf">sad</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">sad</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="kr">if</span> <span class="p">(</span><span class="n">em</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="kr">then</span> <span class="kr">do</span> <span class="n">put</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+  <span class="kr">else</span> <span class="kr">do</span> <span class="n">put</span> <span class="p">(</span><span class="n">em</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">em</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nf">keep</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">keep</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="n">return</span> <span class="n">em</span>
+</pre></div>
+</div>
+<p>ここで、happは幸せ関数、sadは不幸せ関数、keepはkeep calmです。大したこ
+とやってないので説明は端折ります。</p>
+<p>ランダムに選択する部分もindexを返すんじゃなく直接応答を選択するように
+ちょっと変えておきます</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">randomNumGen</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">randomNumGen</span> <span class="n">n</span> <span class="ow">=</span> <span class="n">getStdRandom</span> <span class="p">(</span><span class="n">randomR</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="nf">choiceResponse</span> <span class="ow">::</span>  <span class="p">[</span><span class="kt">String</span><span class="p">]</span><span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="kt">String</span>
+<span class="nf">choiceResponse</span> <span class="n">cs</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">index</span> <span class="ow">&lt;-</span> <span class="n">randomNumGen</span> <span class="o">$</span> <span class="n">length</span> <span class="n">cs</span>
+  <span class="n">return</span> <span class="p">(</span><span class="n">cs</span> <span class="o">!!</span> <span class="n">index</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>ちょっとめんどくさいのはmainですが、もとのコードにStateT対応させるため
+にliftとliftIOをかさねているだけです。入力でfacebookライクにいいね!されると幸
+福度が増して、逆にダメ出しされると幸福度が下がるようにしてみました。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">code</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">code</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">loop</span>
+      <span class="kr">where</span> <span class="n">loop</span> <span class="ow">=</span> <span class="kr">do</span>
+              <span class="n">maybeLine</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">readline</span> <span class="s">&quot;&gt; &quot;</span>
+              <span class="kr">case</span> <span class="n">maybeLine</span> <span class="kr">of</span>
+                <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="kr">do</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">return</span> <span class="nb">()</span>
+                <span class="kt">Just</span> <span class="s">&quot;quit&quot;</span> <span class="ow">-&gt;</span> <span class="kr">do</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">return</span> <span class="nb">()</span>
+                <span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                     <span class="kr">case</span> <span class="n">line</span> <span class="kr">of</span>
+                       <span class="s">&quot;いいね&quot;</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                                 <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">happ</span>
+                                 <span class="n">choiced</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">choiceResponse</span> <span class="o">$</span> <span class="n">map</span> <span class="n">snd</span> <span class="o">$</span> <span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="n">fst</span> <span class="n">s</span> <span class="o">==</span> <span class="n">em</span><span class="p">)</span> <span class="n">responses</span>
+                                 <span class="n">liftIO</span> <span class="o">$</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">choiced</span>
+                       <span class="s">&quot;だめだね&quot;</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                                 <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">sad</span>
+                                 <span class="n">choiced</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">choiceResponse</span> <span class="o">$</span> <span class="n">map</span> <span class="n">snd</span> <span class="o">$</span> <span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="n">fst</span> <span class="n">s</span> <span class="o">==</span> <span class="n">em</span><span class="p">)</span> <span class="n">responses</span>
+                                 <span class="n">liftIO</span> <span class="o">$</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">choiced</span>
+                       <span class="n">otherwise</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                                 <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">keep</span>
+                                 <span class="n">choiced</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">choiceResponse</span> <span class="o">$</span> <span class="n">map</span> <span class="n">snd</span> <span class="o">$</span> <span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="n">fst</span> <span class="n">s</span> <span class="o">==</span> <span class="n">em</span><span class="p">)</span> <span class="n">responses</span>
+                                 <span class="n">liftIO</span> <span class="o">$</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">choiced</span>
+                     <span class="n">loop</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="n">runStateT</span> <span class="n">code</span> <span class="mi">0</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id13">
+<h3>全コード<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<p>全部のコードを載せておきます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">Control.Monad.State</span>
+<span class="kr">import</span> <span class="nn">System.Console.Readline</span>
+<span class="kr">import</span> <span class="nn">System.Random</span>
+
+<span class="nf">randomNumGen</span> <span class="ow">::</span> <span class="kt">Int</span> <span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">randomNumGen</span> <span class="n">n</span> <span class="ow">=</span> <span class="n">getStdRandom</span> <span class="p">(</span><span class="n">randomR</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="nf">choiceResponse</span> <span class="ow">::</span>  <span class="p">[</span><span class="kt">String</span><span class="p">]</span><span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="kt">String</span>
+<span class="nf">choiceResponse</span> <span class="n">cs</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">index</span> <span class="ow">&lt;-</span> <span class="n">randomNumGen</span> <span class="o">$</span> <span class="n">length</span> <span class="n">cs</span>
+  <span class="n">return</span> <span class="p">(</span><span class="n">cs</span> <span class="o">!!</span> <span class="n">index</span><span class="p">)</span>
+
+<span class="nf">responses</span> <span class="ow">=</span> <span class="p">[</span>
+ <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;ピースソーグーーッド！&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;ウルトラハッピー&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;こんにちわ&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;すごいHaskellたのしく学んでますか？&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;お前それサバンナでも同じ事言えんの?&quot;</span><span class="p">),</span>
+ <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;小町とHagexみすぎだろ&quot;</span><span class="p">)]</span>
+
+<span class="kr">type</span> <span class="kt">Emotion</span> <span class="ow">=</span> <span class="kt">Int</span>
+
+<span class="nf">happ</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">happ</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="kr">if</span> <span class="n">em</span><span class="o">+</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="kr">then</span> <span class="kr">do</span> <span class="n">put</span> <span class="mi">1</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="mi">1</span>
+  <span class="kr">else</span> <span class="kr">do</span> <span class="n">put</span> <span class="p">(</span><span class="n">em</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">em</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nf">sad</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">sad</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="kr">if</span> <span class="p">(</span><span class="n">em</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="kr">then</span> <span class="kr">do</span> <span class="n">put</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+  <span class="kr">else</span> <span class="kr">do</span> <span class="n">put</span> <span class="p">(</span><span class="n">em</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">em</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nf">keep</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="kt">Int</span>
+<span class="nf">keep</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="n">return</span> <span class="n">em</span>
+
+<span class="nf">code</span> <span class="ow">::</span> <span class="kt">StateT</span> <span class="kt">Emotion</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">code</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">loop</span>
+      <span class="kr">where</span> <span class="n">loop</span> <span class="ow">=</span> <span class="kr">do</span>
+              <span class="n">maybeLine</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">readline</span> <span class="s">&quot;&gt; &quot;</span>
+              <span class="kr">case</span> <span class="n">maybeLine</span> <span class="kr">of</span>
+                <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="kr">do</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">return</span> <span class="nb">()</span>
+                <span class="kt">Just</span> <span class="s">&quot;quit&quot;</span> <span class="ow">-&gt;</span> <span class="kr">do</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">return</span> <span class="nb">()</span>
+                <span class="kt">Just</span> <span class="n">line</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                     <span class="kr">case</span> <span class="n">line</span> <span class="kr">of</span>
+                       <span class="s">&quot;いいね&quot;</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                                 <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">happ</span>
+                                 <span class="n">choiced</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">choiceResponse</span> <span class="o">$</span> <span class="n">map</span> <span class="n">snd</span> <span class="o">$</span> <span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="n">fst</span> <span class="n">s</span> <span class="o">==</span> <span class="n">em</span><span class="p">)</span> <span class="n">responses</span>
+                                 <span class="n">liftIO</span> <span class="o">$</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">choiced</span>
+                       <span class="s">&quot;だめだね&quot;</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                                 <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">sad</span>
+                                 <span class="n">choiced</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">choiceResponse</span> <span class="o">$</span> <span class="n">map</span> <span class="n">snd</span> <span class="o">$</span> <span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="n">fst</span> <span class="n">s</span> <span class="o">==</span> <span class="n">em</span><span class="p">)</span> <span class="n">responses</span>
+                                 <span class="n">liftIO</span> <span class="o">$</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">choiced</span>
+                       <span class="n">otherwise</span> <span class="ow">-&gt;</span> <span class="kr">do</span>
+                                 <span class="n">em</span> <span class="ow">&lt;-</span> <span class="n">keep</span>
+                                 <span class="n">choiced</span> <span class="ow">&lt;-</span> <span class="n">lift</span> <span class="o">$</span> <span class="n">choiceResponse</span> <span class="o">$</span> <span class="n">map</span> <span class="n">snd</span> <span class="o">$</span> <span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="n">fst</span> <span class="n">s</span> <span class="o">==</span> <span class="n">em</span><span class="p">)</span> <span class="n">responses</span>
+                                 <span class="n">liftIO</span> <span class="o">$</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;monapo&gt; &quot;</span> <span class="o">++</span> <span class="n">choiced</span>
+                     <span class="n">loop</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="n">runStateT</span> <span class="n">code</span> <span class="mi">0</span> <span class="o">&gt;&gt;</span> <span class="n">return</span> <span class="nb">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id14">
+<h3>動かしてみよう<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>せっかくつくったので少し動かしてみましょう。</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>./monapoS
+&gt; こんにちわ
+monapo&gt; こんにちわ
+&gt; いいね
+monapo&gt; ピースソーグーーッド！
+&gt; だめだね
+monapo&gt; すごいHaskellたのしく学んでますか？
+&gt; だめだね
+monapo&gt; お前それサバンナでも同じ事言えんの?
+</pre></div>
+</div>
+</div>
+</div>
 </div>
 
 
@@ -301,6 +496,13 @@ responseの中から応答すべき文字列を選択しています。</p>
 <li><a class="reference internal" href="#id8">ランダムに応答を返す</a><ul>
 <li><a class="reference internal" href="#haskellerhoogle">本物のHaskellerはHoogleを使う</a></li>
 <li><a class="reference internal" href="#id9">コードの説明</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">感情モデルの作成</a><ul>
+<li><a class="reference internal" href="#id11">全体の流れ</a></li>
+<li><a class="reference internal" href="#id12">ロボット生命体的なアイテムの登場です</a></li>
+<li><a class="reference internal" href="#id13">全コード</a></li>
+<li><a class="reference internal" href="#id14">動かしてみよう</a></li>
 </ul>
 </li>
 </ul>

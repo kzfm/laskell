@@ -259,5 +259,220 @@ responseの中から応答すべき文字列を選択しています。
    index <- randomNumGen
    putStrLn $ "monapo> " ++ response !! index
 
+感情モデルの作成
+================
 
+全体の流れ
+----------
+
+応答をランダムに返す人工無能ができたところで、応答の選び方をちょっと工
+夫したくなりますよね?
+
+例えば整数値を
+
+-  1:ハッピー (両手で大きくハートを描いた後、手をハートの形に組んで光波を放ち、敵に直撃させて浄化するテンション)
+-  0:ノーマル 
+- -1:ネガティブ (白紙の未来を黒く塗りつぶす感じで)
+
+という心理状態に見立てて、それぞれの値に応じたレスポンスを返すようにするのはどうでしょう?
+
+先ほどのresponseに関しては
+
+.. code-block:: haskell
+
+    response = [
+     (1, "ピースソーグーーッド！"),
+     (1, "ウルトラハッピー"),
+     (0, "こんにちわ"),
+     (0, "すごいHaskellたのしく学んでますか？"),
+     (-1, "お前それサバンナでも同じ事言えんの?"),
+     (-1, "小町とHagexみすぎだろ")]
+
+といった感じの定義を用意しておいて、(1,0,-1)の応答を返すようにfilter関
+数でフィルターすればいいですね。
+
+.. code-block:: haskell
+
+    map snd $ filter (\s -> fst s == 1) response -- タプルの最初が1である応答のリストを返す
+
+こんな感じで選ばれた応答リストをランダムに返せばよさそうです。
+
+ロボット生命体的なアイテムの登場です
+------------------------------------
+
+続いて、monapoに心理状態を覚えさせることを考えます。ほめられたら1増やし
+、けなされたら1減らすことにします。
+
+IO ()にはStateTっていうプラグインみたいな感覚で付けられる型があるため、
+それを使うとなぜか状態が扱えます。TはTransformerの頭文字で、ロボット生
+命体のアレと一緒です。彼らも合体してより強くなるのでそれのイメージで理
+解しておけば大丈夫です。
+
+StateTを利用すると、doのなかでset,putが使えるようになります。これはま
+るでデータベースのAPIを操作している感覚でデータの出し入れが行えるように
+なるので、なんというかお手軽です。
+
+他に、心理状態がIntなのはコードリーディング的に問題あるだろうという私の
+特別なはからいによりEmotionという別名を付けておきました。
+
+.. code-block:: haskell
+
+    type Emotion = Int
+    
+    happ :: StateT Emotion IO Int
+    happ = do
+      em <- get
+      if em+1 > 1 then do put 1 >> return 1 
+      else do put (em+1) >> return (em+1)
+    
+    sad :: StateT Emotion IO Int
+    sad = do
+      em <- get
+      if (em-1) < (-1) then do put (-1) >> return (-1) 
+      else do put (em-1) >> return (em-1)
+    
+    keep :: StateT Emotion IO Int
+    keep = do 
+      em <- get
+      return em
+
+ここで、happは幸せ関数、sadは不幸せ関数、keepはkeep calmです。大したこ
+とやってないので説明は端折ります。
+
+ランダムに選択する部分もindexを返すんじゃなく直接応答を選択するように
+ちょっと変えておきます
+
+.. code-block:: haskell
+
+    randomNumGen :: Int -> IO Int
+    randomNumGen n = getStdRandom (randomR (0, n-1))
+    
+    choiceResponse ::  [String]-> IO String
+    choiceResponse cs = do
+      index <- randomNumGen $ length cs
+      return (cs !! index)
+
+
+ちょっとめんどくさいのはmainですが、もとのコードにStateT対応させるため
+にliftとliftIOをかさねているだけです。入力でfacebookライクにいいね!されると幸
+福度が増して、逆にダメ出しされると幸福度が下がるようにしてみました。
+
+.. code-block:: haskell
+
+    code :: StateT Emotion IO ()
+    code = do
+      loop
+          where loop = do
+                  maybeLine <- lift $ readline "> "
+                  case maybeLine of
+                    Nothing -> do lift $ return ()
+                    Just "quit" -> do lift $ return ()
+                    Just line -> do
+                         case line of
+                           "いいね" -> do
+                                     em <- happ
+                                     choiced <- lift $ choiceResponse $ map snd $ filter (\s -> fst s == em) responses
+                                     liftIO $ putStrLn $ "monapo> " ++ choiced
+                           "だめだね" -> do
+                                     em <- sad
+                                     choiced <- lift $ choiceResponse $ map snd $ filter (\s -> fst s == em) responses
+                                     liftIO $ putStrLn $ "monapo> " ++ choiced
+                           otherwise -> do
+                                     em <- keep
+                                     choiced <- lift $ choiceResponse $ map snd $ filter (\s -> fst s == em) responses
+                                     liftIO $ putStrLn $ "monapo> " ++ choiced
+                         loop
+    
+    main :: IO ()
+    main = runStateT code 0 >> return ()
+
+全コード
+--------
+
+全部のコードを載せておきます。
+
+.. code-block:: haskell
+
+    import Control.Monad.State
+    import System.Console.Readline
+    import System.Random
+    
+    randomNumGen :: Int -> IO Int
+    randomNumGen n = getStdRandom (randomR (0, n-1))
+    
+    choiceResponse ::  [String]-> IO String
+    choiceResponse cs = do
+      index <- randomNumGen $ length cs
+      return (cs !! index)
+    
+    responses = [
+     (1, "ピースソーグーーッド！"),
+     (1, "ウルトラハッピー"),
+     (0, "こんにちわ"),
+     (0, "すごいHaskellたのしく学んでますか？"),
+     (-1, "お前それサバンナでも同じ事言えんの?"),
+     (-1, "小町とHagexみすぎだろ")]
+    
+    type Emotion = Int
+    
+    happ :: StateT Emotion IO Int
+    happ = do
+      em <- get
+      if em+1 > 1 then do put 1 >> return 1 
+      else do put (em+1) >> return (em+1)
+    
+    sad :: StateT Emotion IO Int
+    sad = do
+      em <- get
+      if (em-1) < (-1) then do put (-1) >> return (-1) 
+      else do put (em-1) >> return (em-1)
+    
+    keep :: StateT Emotion IO Int
+    keep = do 
+      em <- get
+      return em
+    
+    code :: StateT Emotion IO ()
+    code = do
+      loop
+          where loop = do
+                  maybeLine <- lift $ readline "> "
+                  case maybeLine of
+                    Nothing -> do lift $ return ()
+                    Just "quit" -> do lift $ return ()
+                    Just line -> do
+                         case line of
+                           "いいね" -> do
+                                     em <- happ
+                                     choiced <- lift $ choiceResponse $ map snd $ filter (\s -> fst s == em) responses
+                                     liftIO $ putStrLn $ "monapo> " ++ choiced
+                           "だめだね" -> do
+                                     em <- sad
+                                     choiced <- lift $ choiceResponse $ map snd $ filter (\s -> fst s == em) responses
+                                     liftIO $ putStrLn $ "monapo> " ++ choiced
+                           otherwise -> do
+                                     em <- keep
+                                     choiced <- lift $ choiceResponse $ map snd $ filter (\s -> fst s == em) responses
+                                     liftIO $ putStrLn $ "monapo> " ++ choiced
+                         loop
+    
+    main :: IO ()
+    main = runStateT code 0 >> return ()
+
+動かしてみよう
+--------------
+
+せっかくつくったので少し動かしてみましょう。
+
+.. code-block:: sh
+
+    $ ./monapoS
+    > こんにちわ
+    monapo> こんにちわ
+    > いいね
+    monapo> ピースソーグーーッド！
+    > だめだね
+    monapo> すごいHaskellたのしく学んでますか？
+    > だめだね
+    monapo> お前それサバンナでも同じ事言えんの?
 
