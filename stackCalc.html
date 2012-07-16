@@ -155,7 +155,7 @@ popの2つのメソッドを持っていればいいですね。</p>
 しいスタックを次の操作に渡さないと次の操作は行えない</strong> ということです。
 そして逆に考えると、初期値を与えるとシーケンシャルに一気に流れるような
 おおきな一つの流れを作っているのだとも言えます。</p>
-<p>コンパイラー的には、 <strong>ぷよぷよの連鎖パターン</strong> の習得に似ていますね。</p>
+<p>これはまったくもって <strong>ぷよぷよの連鎖パターン</strong> の習得に似ていますね。</p>
 <p>上記のlet式の流れを見てみると、stackを取って操作をする(この場合はpush)
 関数が見えてきます。</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="nf">\</span><span class="n">stack</span> <span class="ow">-&gt;</span> <span class="n">push</span> <span class="mi">1</span> <span class="o">$</span> <span class="n">stack</span>
@@ -224,14 +224,14 @@ popの2つのメソッドを持っていればいいですね。</p>
 をつけるのは無駄だと思うんですよね。それに、この計算の流れ自体がパター
 ンにできると思いませんか?</p>
 <p>calcの引数を右に移行してラムダ式にします。</p>
-<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="nb">()</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">((</span><span class="kt">Integer</span><span class="p">),</span> <span class="kt">Stack</span><span class="p">)</span>
 <span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="nf">\</span><span class="n">stack</span> <span class="ow">-&gt;</span>
     <span class="kr">let</span>
         <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack</span>
         <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack1</span>
         <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>  <span class="ow">=</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
     <span class="kr">in</span>
-      <span class="p">(</span><span class="nb">()</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>
+      <span class="p">((</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">),</span> <span class="n">stack3</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>続いて、ぷよぷよの連鎖パターンを思い浮かべると</p>
@@ -241,16 +241,17 @@ popの2つのメソッドを持っていればいいですね。</p>
 </pre></div>
 </div>
 <p>がつながっているのが見えてきます。これが面白いのが、s -&gt; (i, s)を連鎖
-して大きくしたモノの型もまたs -&gt; (i, s)の形になっているところですね。</p>
+して大きくしたモノの型もまたs -&gt; (i, s)の形になっているところですね。
+(calcの関数定義をみるべし)</p>
 <p>2つのs -&gt; (i, s)という型をうまくつないでより大きなs -&gt; (i, s)という型
 を作れれば、これは無限に連鎖できることになります。そういう関数と関数を
 結合する関数ををbindと定義し作ってみましょう。</p>
 <p>ただし一つ注意しないといけないことは、2つのs -&gt; (i, s)をつなぐ際に最初
 のs -&gt; (i, s)で出てきた値iをどうやって使いまわすか(束縛するか)も考えな
 いといけないことです。</p>
-<p>ちょっと考えれば(考えないと天下り感が残りますが)、束縛といえばラムダ式
-なので二番目のs -&gt; (i, s)は最初のスタック操作の結果を受け取ってs -&gt;
-(i, s)を返すようにすればいいんじゃないかなーってことで</p>
+<p>時間をおいてちょっと考えれば(考えないと天下り感が残りますが)、束縛とい
+えばラムダ式なので二番目のs -&gt; (i, s)は最初のスタック操作の結果を受け
+取ってs -&gt; (i, s)を返すようにすればいいんじゃないかなーってことで</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="nf">\</span><span class="n">i1</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -286,12 +287,12 @@ Stack)と最初の引数と同じ形の関数になっていますね。</p>
 <span class="o">(</span>2,<span class="o">[</span>1,1,2,3,4,5<span class="o">])</span>
 </pre></div>
 </div>
-<p>これはこれで楽しい。</p>
+<p>これはこれで楽しいです。</p>
 </div>
 <div class="section" id="bind">
 <h2>加減乗除をbindを使って書きなおす<a class="headerlink" href="#bind" title="Permalink to this headline">¶</a></h2>
-<p>bind関数はうまく動きそうなので先に定義した使いもしない状態に名前をつけ
-ていて殘念臭を漂わせていたcalcを書き直します。</p>
+<p>bind関数はうまく動きそうなので、先に定義した <strong>明示的に使いもしない状態
+に名前をつけて</strong> いて殘念臭を漂わせていたcalcを書き直します。</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
 <span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="n">pop</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="n">i1</span> <span class="ow">-&gt;</span> <span class="n">pop</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="n">i2</span> <span class="ow">-&gt;</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span>
 
