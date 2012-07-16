@@ -40,6 +40,7 @@ Contents:
 
    chatbot
    pleac
+   stackCalc
 
 Indices and tables
 ==================

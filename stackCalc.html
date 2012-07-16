@@ -1,0 +1,511 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Haskellでスタックを利用した加減乗除の計算機を作ってみる &mdash; laskell 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="laskell 0.0.1 documentation" href="index.html" />
+    <link rel="prev" title="HaskellでPLEAC (todo)" href="pleac.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pleac.html" title="HaskellでPLEAC (todo)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">laskell 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="haskell">
+<h1>Haskellでスタックを利用した加減乗除の計算機を作ってみる<a class="headerlink" href="#haskell" title="Permalink to this headline">¶</a></h1>
+<p>モナドはStateの理解から入ったほうが分かりやすいんじゃないかなぁと。よく
+あるMaybeとかEitherから入るとStateモナドで激はまりしますよね?</p>
+<p>僕はStateモナドから入ったほうがいいんじゃないかなーと思ったのでそんな題
+材を考えてみました。自分はPerl,Pythonがフィールドなので、状態付き計算か
+ら入ったほうがすんなり理解できたし、そういうヒトもいるかなと思って書い
+てみました。</p>
+<p>ちなみに文章のほとんどを<a class="reference external" href="http://com-f.net/">コミュニティf</a>でもく
+もくしながら書きました。あそこを静岡Haskellerの聖地にするべく頑張ってい
+ます。</p>
+<p>尚、特に参考になった(というかインスパイアされた)のが、</p>
+<ul class="simple">
+<li><a class="reference external" href="http://jutememo.blogspot.jp/2009/10/haskell-state-1.html">Haskell の State モナド (1) - 状態を模倣する</a></li>
+<li><a class="reference external" href="http://www.amazon.co.jp/dp/4274068854">すごいHaskellたのしく学ぼうの14.3 計算の状態の正体</a></li>
+<li><a class="reference external" href="http://d.hatena.ne.jp/kazu-yamamoto/20080604/1212573964">状態モナド遊び</a></li>
+</ul>
+<p>なので、併せて読むといいです。先人の知恵に感謝しつつ。</p>
+<div class="section" id="id2">
+<h2>スタックを実装しよう<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>よいこのみんなは知ってる通り、データを後入れ先出し (LIFO: Last In
+First Out; FILO: First In Last Out) の構造で保持するものなので、pushと
+popの2つのメソッドを持っていればいいですね。</p>
+<p>例えば、Pythonでスタックを実装する場合には破壊的操作(つまり再代入)が可
+能なので、stackという変数を用意しておけばいい感じに使えます。</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span>
+<span class="go">[1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span>
+<span class="go">[1]</span>
+</pre></div>
+</div>
+<p>同じことをHaskellでやろうとすると</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">type</span> <span class="kt">Stack</span> <span class="ow">=</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span>
+
+<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">push</span> <span class="n">c</span> <span class="n">cs</span> <span class="ow">=</span> <span class="n">c</span><span class="kt">:</span><span class="n">cs</span>
+
+<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span>
+<span class="nf">pop</span> <span class="p">(</span><span class="n">c</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span> <span class="ow">=</span> <span class="n">c</span>
+</pre></div>
+</div>
+<p>このように書けますが、popしてみると</p>
+<div class="highlight-sh"><div class="highlight"><pre>*Main&gt; <span class="nb">let </span><span class="nv">stack</span> <span class="o">=</span> <span class="o">[</span>3,2,1<span class="o">]</span>
+*Main&gt; pop stack
+3
+*Main&gt; pop stack
+3
+*Main&gt; pop stack
+3
+</pre></div>
+</div>
+<p>haskellでは破壊的な操作ができないので、スタックから要素を取り出した後の
+スタックも一緒に返さないとダメみたいです。</p>
+<p>スタックを使って操作した結果と、その結果として変化したスタックを常に持
+ちまわる必要があるので、haskellでのスタックの実装は次のようになりました。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">type</span> <span class="kt">Stack</span> <span class="ow">=</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span>
+
+<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">push</span> <span class="n">c</span> <span class="n">cs</span> <span class="ow">=</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span>
+
+<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">pop</span> <span class="p">(</span><span class="n">c</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span> <span class="ow">=</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">cs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>実際に使ってみます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="o">$</span> <span class="n">ghci</span> <span class="kt">MyStack</span><span class="o">.</span><span class="n">hs</span>
+<span class="kt">GHCi</span><span class="p">,</span> <span class="n">version</span> <span class="mf">7.4</span><span class="o">.</span><span class="mi">1</span><span class="kt">:</span> <span class="n">http</span><span class="kt">://</span><span class="n">www</span><span class="o">.</span><span class="n">haskell</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">ghc</span><span class="o">/</span>  <span class="kt">:?</span> <span class="n">for</span> <span class="n">help</span>
+<span class="kt">Loading</span> <span class="n">package</span> <span class="n">ghc</span><span class="o">-</span><span class="n">prim</span> <span class="o">...</span> <span class="n">linking</span> <span class="o">...</span> <span class="n">done</span><span class="o">.</span>
+<span class="kt">Loading</span> <span class="n">package</span> <span class="n">integer</span><span class="o">-</span><span class="n">gmp</span> <span class="o">...</span> <span class="n">linking</span> <span class="o">...</span> <span class="n">done</span><span class="o">.</span>
+<span class="kt">Loading</span> <span class="n">package</span> <span class="n">base</span> <span class="o">...</span> <span class="n">linking</span> <span class="o">...</span> <span class="n">done</span><span class="o">.</span>
+<span class="p">[</span><span class="mi">1</span> <span class="kr">of</span> <span class="mi">1</span><span class="p">]</span> <span class="kt">Compiling</span> <span class="kt">Main</span>             <span class="p">(</span> <span class="kt">MyStack</span><span class="o">.</span><span class="n">hs</span><span class="p">,</span> <span class="n">interpreted</span> <span class="p">)</span>
+<span class="kt">Ok</span><span class="p">,</span> <span class="n">modules</span> <span class="n">loaded</span><span class="kt">:</span> <span class="kt">Main</span><span class="o">.</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="n">stack</span> <span class="ow">=</span> <span class="kt">[]</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">push</span> <span class="mi">1</span> <span class="n">stack</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span> <span class="ow">=</span> <span class="n">push</span> <span class="mi">2</span> <span class="n">stack1</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span> <span class="ow">=</span> <span class="n">push</span> <span class="mi">3</span> <span class="n">stack2</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="n">stack3</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">stack4</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack3</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="n">r1</span>
+<span class="mi">3</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="n">stack4</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="kr">let</span> <span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="n">stack5</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack4</span>
+<span class="o">*</span><span class="kt">Main</span><span class="o">&gt;</span> <span class="n">stack5</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>毎回新しいスタックに名前をつけて、次の操作に渡さないといけないなんて超
+めんどくさいですね。</p>
+<p>しかし、我々がこのめんどくささから得た教訓はまさに、 <strong>操作の結果得た新
+しいスタックを次の操作に渡さないと次の操作は行えない</strong> ということです。
+そして逆に考えると、初期値を与えるとシーケンシャルに一気に流れるような
+おおきな一つの流れを作っているのだとも言えます。</p>
+<p>コンパイラー的には、 <strong>ぷよぷよの連鎖パターン</strong> の習得に似ていますね。</p>
+<p>上記のlet式の流れを見てみると、stackを取って操作をする(この場合はpush)
+関数が見えてきます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">\</span><span class="n">stack</span> <span class="ow">-&gt;</span> <span class="n">push</span> <span class="mi">1</span> <span class="o">$</span> <span class="n">stack</span>
+</pre></div>
+</div>
+<p>ラプラスの瞳で見るとこれが構成単位になりそうですね。それは後のほうで明
+らかになることでしょう。</p>
+</div>
+<div class="section" id="id3">
+<h2>加算を実装してみる<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>さて、スタックが実装できたところで加算を作ってみましょう。加算という操
+作は</p>
+<ul class="simple">
+<li>スタックから2つpop</li>
+<li>値を足す</li>
+<li>その値をpushする</li>
+</ul>
+<p>であり、pop2つとpush1つが順番に行われます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">add</span> <span class="ow">::</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">add</span> <span class="n">stack</span> <span class="ow">=</span>
+    <span class="kr">let</span>
+        <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack</span>
+        <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack1</span>
+        <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>  <span class="ow">=</span> <span class="n">push</span> <span class="p">(</span><span class="n">i1</span><span class="o">+</span><span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
+    <span class="kr">in</span>
+      <span class="p">((</span><span class="n">i1</span><span class="o">+</span><span class="n">i2</span><span class="p">),</span> <span class="n">stack3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>これはうまく動きます</p>
+<div class="highlight-sh"><div class="highlight"><pre>*Main&gt; <span class="nb">let </span><span class="nv">stack</span> <span class="o">=</span> <span class="o">[</span>3,2,1<span class="o">]</span>
+*Main&gt; <span class="nb">let</span> <span class="o">(</span>_, stack<span class="s1">&#39;) = add stack</span>
+<span class="s1">*Main&gt; stack&#39;</span>
+<span class="o">[</span>5,1<span class="o">]</span>
+</pre></div>
+</div>
+<p>続いて減乗除も実装したいところですが、共通のパターンをくくりだしてしま
+います。addも再定義しておきます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">calc</span> <span class="n">op</span> <span class="n">stack</span> <span class="ow">=</span>
+    <span class="kr">let</span>
+        <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack</span>
+        <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack1</span>
+        <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>  <span class="ow">=</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
+    <span class="kr">in</span>
+      <span class="p">((</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">),</span> <span class="n">stack3</span><span class="p">)</span>
+
+<span class="nf">add</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span>
+<span class="nf">sub</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">-</span><span class="p">)</span>
+<span class="nf">mul</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="nf">dvv</span> <span class="ow">=</span> <span class="n">calc</span> <span class="n">div</span>
+</pre></div>
+</div>
+<p>計算結果が正しい場合にはスタックの中には1つの要素しか残っていないので、
+その評価をするevalという関数を定義しておきます。(でもこれは微妙に使わな
+いかもしれません)</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">eval</span> <span class="ow">::</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span>
+<span class="nf">eval</span> <span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="ow">=</span> <span class="n">r</span>
+<span class="nf">eval</span> <span class="n">cs</span> <span class="ow">=</span> <span class="ne">error</span> <span class="o">$</span> <span class="s">&quot;Invalid Stack &quot;</span> <span class="o">++</span> <span class="p">(</span><span class="n">show</span> <span class="n">cs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>それでは適当に計算してみましょう。</p>
+</div>
+<div class="section" id="id4">
+<h2>共通のパターンを見つける<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>先のcalc関数において、stackの状態をstack1,stack2と使いもしないのに名前
+をつけるのは無駄だと思うんですよね。それに、この計算の流れ自体がパター
+ンにできると思いませんか?</p>
+<p>calcの引数を右に移行してラムダ式にします。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="nb">()</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="nf">\</span><span class="n">stack</span> <span class="ow">-&gt;</span>
+    <span class="kr">let</span>
+        <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack</span>
+        <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack1</span>
+        <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>  <span class="ow">=</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
+    <span class="kr">in</span>
+      <span class="p">(</span><span class="nb">()</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>続いて、ぷよぷよの連鎖パターンを思い浮かべると</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">\</span><span class="n">stack</span>  <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span>
+<span class="nf">\</span><span class="n">stack1</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span>
+<span class="nf">\</span><span class="n">stack2</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">i3</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>がつながっているのが見えてきます。これが面白いのが、s -&gt; (i, s)を連鎖
+して大きくしたモノの型もまたs -&gt; (i, s)の形になっているところですね。</p>
+<p>2つのs -&gt; (i, s)という型をうまくつないでより大きなs -&gt; (i, s)という型
+を作れれば、これは無限に連鎖できることになります。そういう関数と関数を
+結合する関数ををbindと定義し作ってみましょう。</p>
+<p>ただし一つ注意しないといけないことは、2つのs -&gt; (i, s)をつなぐ際に最初
+のs -&gt; (i, s)で出てきた値iをどうやって使いまわすか(束縛するか)も考えな
+いといけないことです。</p>
+<p>ちょっと考えれば(考えないと天下り感が残りますが)、束縛といえばラムダ式
+なので二番目のs -&gt; (i, s)は最初のスタック操作の結果を受け取ってs -&gt;
+(i, s)を返すようにすればいいんじゃないかなーってことで</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">\</span><span class="n">i1</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>みたいな形にすれば良さげですね。</p>
+<p>というわけでbindを定義してみます。上の関数は二番目の引数になっているの
+がわかると思います。ちょっと関数の定義がくどくなってますが、括弧をつけ
+て区切ったのでよく見ればわかると思います。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">bind</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">))</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)))</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">))</span>
+<span class="nf">bind</span> <span class="n">opstack1</span> <span class="n">opstack2</span> <span class="ow">=</span> <span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="kr">let</span> <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">opstack1</span> <span class="n">s</span>
+                               <span class="kr">in</span> <span class="p">(</span><span class="n">opstack2</span> <span class="n">i1</span><span class="p">)</span> <span class="n">s1</span>
+</pre></div>
+</div>
+<p>二番目の引数(opstack2)は最初のスタック操作の結果を受け取って束縛する関
+数になっています。これの戻り値はナイスな感じにStack -&gt; (Integer,
+Stack)と最初の引数と同じ形の関数になっていますね。</p>
+<p>ということはpushとpopの操作は何度でもbindすることができるということです。
+また忘れていけないのはこれは関数であり初期状態を与えれば一気に計算が進
+むということです。</p>
+<p>お遊びとしてpopを三回する関数とpushを二回した後にpopを一回する関数にそ
+れぞれlispっぽい名前を付けてみます(クダダダダー)。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">poppp</span> <span class="ow">::</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">poppp</span> <span class="ow">=</span> <span class="n">pop</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">pop</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">pop</span>
+
+<span class="nf">pushshop</span> <span class="ow">::</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">pushshop</span> <span class="ow">=</span> <span class="p">(</span><span class="n">push</span> <span class="mi">1</span><span class="p">)</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">push</span> <span class="mi">2</span><span class="p">)</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="kr">_</span>  <span class="ow">-&gt;</span> <span class="n">pop</span>
+</pre></div>
+</div>
+<p>遊んでみます。</p>
+<div class="highlight-sh"><div class="highlight"><pre>*Main&gt; <span class="nb">let </span><span class="nv">stack</span> <span class="o">=</span> <span class="o">[</span>1..5<span class="o">]</span>
+*Main&gt; poppp stack
+<span class="o">(</span>3,<span class="o">[</span>4,5<span class="o">])</span>
+*Main&gt; pushshop  stack
+<span class="o">(</span>2,<span class="o">[</span>1,1,2,3,4,5<span class="o">])</span>
+</pre></div>
+</div>
+<p>これはこれで楽しい。</p>
+</div>
+<div class="section" id="bind">
+<h2>加減乗除をbindを使って書きなおす<a class="headerlink" href="#bind" title="Permalink to this headline">¶</a></h2>
+<p>bind関数はうまく動きそうなので先に定義した使いもしない状態に名前をつけ
+ていて殘念臭を漂わせていたcalcを書き直します。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="kt">Integer</span><span class="p">,</span> <span class="kt">Stack</span><span class="p">)</span>
+<span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="n">pop</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="n">i1</span> <span class="ow">-&gt;</span> <span class="n">pop</span> <span class="p">`</span><span class="n">bind</span><span class="p">`</span> <span class="nf">\</span><span class="n">i2</span> <span class="ow">-&gt;</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span>
+
+<span class="c1">-- calc :: (Integer -&gt; Integer -&gt; Integer) -&gt; Stack -&gt; ((), Stack)</span>
+<span class="c1">-- calc op = \stack -&gt;</span>
+<span class="c1">--     let</span>
+<span class="c1">--         (i1, stack1) = pop stack</span>
+<span class="c1">--         (i2, stack2) = pop stack1</span>
+<span class="c1">--         (_, stack3)  = push (op i1 i2) stack2</span>
+<span class="c1">--     in</span>
+<span class="c1">--       ((), stack3)</span>
+</pre></div>
+</div>
+<p>もとのコードと比較して見るとわかりますが、新しく書きなおしたコードには
+stackが明示的にでてこなくなりました。単にbindでpushとかpopをつないでい
+るだけです。つまり、stackの状態はbind関数の中に隠されてしまったことにな
+ります。</p>
+<p>隠れたことによって、我々はスタックの状態を気にする必要がなくなりました。
+これはスーパーマグナムウルトラハッピーなことですね。bind関数が素晴らし
+すぎる。</p>
+<p>もう一つ重要なことは(先にも書きましたが)、bindでつないだ関数は小さい関
+数を順番につないで、もとの型と同じ形をしたより大きな1つの関数を返してい
+ることです。そして初期状態を与えれば、その関数の内部で状態というものを
+扱いつつ計算が一気に行われるわけです。</p>
+<p>(私の疑問:そう見えるだけのか、計算の状態とはそもそもそういうものなのか?)</p>
+<p>まぁ、これって状態を扱う計算の定石なんでデザインパターン的な名前がつい
+ててもおかしくないんじゃないのかねー</p>
+<p>実際についてますねー、モナドという名前が。</p>
+<p><a class="reference external" href="http://www.sampou.org/haskell/a-a-monads/html/introduction.html">モナドは値およびその値を使う計算の並びという観点からいえば、計算を構造化する方法です</a></p>
+</div>
+<div class="section" id="state">
+<h2>Stateモナド<a class="headerlink" href="#state" title="Permalink to this headline">¶</a></h2>
+<p>構造の単位として状態をとって、状態をもとに計算した結果と、次の状態のペ
+アを返す関数つまり s -&gt; (i1, s1)を中心に考えます。関数は長ったらしいの
+で、適当な型を決めます。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">newtype</span> <span class="kt">State</span> <span class="n">s</span> <span class="n">a</span> <span class="ow">=</span> <span class="kt">State</span> <span class="p">{</span> <span class="n">runState</span> <span class="ow">::</span> <span class="n">s</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="p">}</span>
+
+<span class="kr">instance</span> <span class="kt">Monad</span> <span class="p">(</span><span class="kt">State</span> <span class="n">s</span><span class="p">)</span> <span class="kr">where</span>
+    <span class="n">return</span> <span class="n">a</span> <span class="ow">=</span> <span class="kt">State</span> <span class="o">$</span> <span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">&gt;&gt;=</span> <span class="n">k</span>  <span class="ow">=</span> <span class="kt">State</span> <span class="o">$</span> <span class="nf">\</span><span class="n">s</span> <span class="ow">-&gt;</span> <span class="kr">let</span>
+            <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">s&#39;</span><span class="p">)</span> <span class="ow">=</span> <span class="n">runState</span> <span class="n">m</span> <span class="n">s</span>
+            <span class="kr">in</span> <span class="n">runState</span> <span class="p">(</span><span class="n">k</span> <span class="n">a</span><span class="p">)</span> <span class="n">s&#39;</span>
+</pre></div>
+</div>
+<p>&gt;&gt;=は先に実装したbindのことですね。最初に考えていたスタックはIntegerの
+リストに別名を付けたものですが、今回のStackはState [Integer] Integer型
+に別名をつけたものです(そしてこれは実際には関数であることに注意)</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">Control.Monad.State</span>
+
+<span class="kr">type</span> <span class="kt">Stack</span> <span class="ow">=</span> <span class="kt">State</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span> <span class="kt">Integer</span>
+
+<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">push</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">get</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">cs</span> <span class="ow">-&gt;</span> <span class="n">put</span> <span class="p">(</span><span class="n">c</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="n">c</span>
+
+<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pop</span> <span class="ow">=</span> <span class="n">get</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">cs</span> <span class="ow">-&gt;</span> <span class="n">put</span> <span class="p">(</span><span class="n">tail</span> <span class="n">cs</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">head</span> <span class="n">cs</span><span class="p">)</span>
+
+<span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">i1</span> <span class="ow">-&gt;</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">i2</span> <span class="ow">-&gt;</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span>
+
+<span class="nf">add</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span>
+<span class="nf">sub</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">-</span><span class="p">)</span>
+<span class="nf">mul</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="nf">dvv</span> <span class="ow">=</span> <span class="n">calc</span> <span class="n">div</span>
+
+<span class="nf">poppp</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">poppp</span> <span class="ow">=</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">pop</span>
+
+<span class="nf">pushshop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pushshop</span> <span class="ow">=</span> <span class="p">(</span><span class="n">push</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">push</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span>  <span class="ow">-&gt;</span> <span class="n">pop</span>
+</pre></div>
+</div>
+<p>pushとpopはMonadStateクラスのメソッドであるputとgetを使って書きなおして
+おきました。</p>
+<p>これでだいぶすっきりしましたが、モナドはdo記法が使えるのでコレを使って
+さらに書きなおしてみましょう</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">Control.Monad.State</span>
+
+<span class="kr">type</span> <span class="kt">Stack</span> <span class="ow">=</span> <span class="kt">State</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span> <span class="kt">Integer</span>
+
+<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">push</span> <span class="n">c</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">cs</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="n">put</span> <span class="p">(</span><span class="n">c</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span>
+  <span class="n">return</span> <span class="n">c</span>
+
+<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pop</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">cs</span> <span class="ow">&lt;-</span> <span class="n">get</span>
+  <span class="n">put</span> <span class="p">(</span><span class="n">tail</span> <span class="n">cs</span><span class="p">)</span>
+  <span class="n">return</span> <span class="p">(</span><span class="n">head</span> <span class="n">cs</span><span class="p">)</span>
+
+<span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">i1</span> <span class="ow">&lt;-</span> <span class="n">pop</span>
+  <span class="n">i2</span> <span class="ow">&lt;-</span> <span class="n">pop</span>
+  <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span>
+
+<span class="nf">add</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span>
+<span class="nf">sub</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">-</span><span class="p">)</span>
+<span class="nf">mul</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="nf">dvv</span> <span class="ow">=</span> <span class="n">calc</span> <span class="n">div</span>
+
+<span class="nf">poppp</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">poppp</span> <span class="ow">=</span> <span class="kr">do</span> <span class="n">pop</span><span class="p">;</span> <span class="n">pop</span><span class="p">;</span> <span class="n">pop</span>
+
+<span class="nf">pushshop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pushshop</span> <span class="ow">=</span> <span class="kr">do</span> <span class="n">push</span> <span class="mi">1</span><span class="p">;</span> <span class="n">push</span> <span class="mi">2</span><span class="p">;</span> <span class="n">pop</span>
+</pre></div>
+</div>
+<p>一見手続き型の言語で書いてるようにみえますね。でも気をつけてください、
+これは関数からより大きな関数をつくっているのであって、逐次実行をしてい
+るわけではないのです。</p>
+<p>(そもそも逐次実行とは何なのか?)</p>
+</div>
+<div class="section" id="io">
+<h2>IOとは何なのか?<a class="headerlink" href="#io" title="Permalink to this headline">¶</a></h2>
+<p>さて、Stateモナドが分かっていると似たような状態付き計算が思い浮かぶと思
+います。あれは結局どういう状態を初期値として与えてんだ?と疑問に思ったあ
+なたは:i IOをする時が来たのです(ghciで)。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">newtype</span> <span class="kt">IO</span> <span class="n">a</span>
+  <span class="ow">=</span> <span class="kt">GHC</span><span class="o">.</span><span class="kt">Types</span><span class="o">.</span><span class="kt">IO</span> <span class="p">(</span><span class="kt">GHC</span><span class="o">.</span><span class="kt">Prim</span><span class="o">.</span><span class="kt">State</span><span class="o">#</span> <span class="kt">GHC</span><span class="o">.</span><span class="kt">Prim</span><span class="o">.</span><span class="kt">RealWorld</span>
+                  <span class="ow">-&gt;</span> <span class="p">(</span><span class="o">#</span> <span class="kt">GHC</span><span class="o">.</span><span class="kt">Prim</span><span class="o">.</span><span class="kt">State</span><span class="o">#</span> <span class="kt">GHC</span><span class="o">.</span><span class="kt">Prim</span><span class="o">.</span><span class="kt">RealWorld</span><span class="p">,</span> <span class="n">a</span> <span class="o">#</span><span class="p">))</span>
+          <span class="c1">-- Defined in `GHC.Types&#39;</span>
+</pre></div>
+</div>
+<p>これは実世界という状態を取るStateモナドのことですね。特殊化されたState
+モナドと考えていいんでしょう。(本当にいいのか?)</p>
+</div>
+<div class="section" id="writerreaderstate">
+<h2>Writerモナド、ReaderモナドもStateモナドの特殊な状態<a class="headerlink" href="#writerreaderstate" title="Permalink to this headline">¶</a></h2>
+<p>Writerモナドは、ログが肥大化する状態を実装したStateモナドと考えればいいですね。</p>
+<p>参考</p>
+<ul class="simple">
+<li><a class="reference external" href="http://d.hatena.ne.jp/enakai00/20110726/1311651155">State MonadとWriter Monadを見比べる</a></li>
+</ul>
+<p>Readerモナドは実行時にセットして後は読み出ししか出来ないStateモナドと考えればいいです。</p>
+<blockquote>
+<div>プログラムの実行時に決まるような大域的な情報を、プログラムの何個所かで共有するにはどうすればよいでしょうか？</div></blockquote>
+<ul class="simple">
+<li><a class="reference external" href="http://itpro.nikkeibp.co.jp/article/COLUMN/20090303/325807/">第29回　グローバル変数の代わりに使えるReaderモナドとWriterモナド</a></li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h2>その他<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>MaybeとかEitherもStateモナドで書き直せるんだろうか?</p>
+</div>
+<div class="section" id="id7">
+<h2>まとめ<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://www.sampou.org/haskell/a-a-monads/html/introduction.html">モナドは (途中略) 計算を構造化する方法です</a></p>
+<p>状態を純粋関数型言語で扱うための枠組みというかパターンがあって、それは
+モナドという計算を構造化する型で表現できることがわかりました。これは
+Stateモナドを理解して、その特殊な状態として他のモナドを理解すれば効率的
+なんじゃないかなーと思います。</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Haskellでスタックを利用した加減乗除の計算機を作ってみる</a><ul>
+<li><a class="reference internal" href="#id2">スタックを実装しよう</a></li>
+<li><a class="reference internal" href="#id3">加算を実装してみる</a></li>
+<li><a class="reference internal" href="#id4">共通のパターンを見つける</a></li>
+<li><a class="reference internal" href="#bind">加減乗除をbindを使って書きなおす</a></li>
+<li><a class="reference internal" href="#state">Stateモナド</a></li>
+<li><a class="reference internal" href="#io">IOとは何なのか?</a></li>
+<li><a class="reference internal" href="#writerreaderstate">Writerモナド、ReaderモナドもStateモナドの特殊な状態</a></li>
+<li><a class="reference internal" href="#id6">その他</a></li>
+<li><a class="reference internal" href="#id7">まとめ</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pleac.html"
+                        title="previous chapter">HaskellでPLEAC (todo)</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pleac.html" title="HaskellでPLEAC (todo)"
+             >previous</a> |</li>
+        <li><a href="index.html">laskell 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, kzfm.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
