@@ -25,6 +25,7 @@
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="laskell 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Haskellでスタックを利用した加減乗除の計算機を作ってみる" href="stackCalc.html" />
     <link rel="prev" title="Haskellで人工無脳をつくろう" href="chatbot.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -41,6 +42,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="stackCalc.html" title="Haskellでスタックを利用した加減乗除の計算機を作ってみる"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="chatbot.html" title="Haskellで人工無脳をつくろう"
              accesskey="P">previous</a> |</li>
@@ -61,9 +65,19 @@
 <h2>7 章    ファイルアクセス<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id2">
 <h3>レシピ7.1 ファイルをオープンする<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch07_02.htm">Opening a File</a></p>
+<p>openFileを使う</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">file</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">h</span> <span class="ow">&lt;-</span> <span class="n">openFile</span> <span class="n">file</span> <span class="kt">ReadMode</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id3">
 <h3>レシピ7.2 普通と違うファイル名でファイルをオープンする<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>できるのか?</p>
 </div>
 <div class="section" id="id4">
 <h3>レシピ7.3 ファイル名に含まれるチルダを展開する<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
@@ -1215,6 +1229,9 @@
   <h4>Previous topic</h4>
   <p class="topless"><a href="chatbot.html"
                         title="previous chapter">Haskellで人工無脳をつくろう</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="stackCalc.html"
+                        title="next chapter">Haskellでスタックを利用した加減乗除の計算機を作ってみる</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -1238,6 +1255,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="stackCalc.html" title="Haskellでスタックを利用した加減乗除の計算機を作ってみる"
+             >next</a> |</li>
         <li class="right" >
           <a href="chatbot.html" title="Haskellで人工無脳をつくろう"
              >previous</a> |</li>

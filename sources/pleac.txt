@@ -12,8 +12,22 @@
 レシピ7.1 ファイルをオープンする
 --------------------------------
 
+`Opening a File <http://docstore.mik.ua/orelly/perl/cookbook/ch07_02.htm>`_
+
+openFileを使う
+
+.. code-block:: haskell
+
+    import System.Environment
+    
+    main = do
+      (file:_) <- getArgs
+      h <- openFile file ReadMode
+
 レシピ7.2 普通と違うファイル名でファイルをオープンする
 ------------------------------------------------------
+
+できるのか?
 
 レシピ7.3 ファイル名に含まれるチルダを展開する
 ----------------------------------------------
