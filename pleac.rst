@@ -32,6 +32,8 @@ openFileを使う
 レシピ7.3 ファイル名に含まれるチルダを展開する
 ----------------------------------------------
 
+`Expanding Tildes in Filenames <http://docstore.mik.ua/orelly/perl/cookbook/ch07_04.htm>`_
+ 
 getpwnamがみつからなかったので書いた。
 
 .. code-block:: haskell
