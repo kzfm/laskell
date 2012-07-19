@@ -87,6 +87,21 @@ getpwnamがみつからなかったので書いた。
 レシピ7.5 一時ファイルを作成する
 ---------------------------------
 
+`Creating Temporary Files <http://docstore.mik.ua/orelly/perl/cookbook/ch07_06.htm>`_ 
+
+`openTempFile <http://hackage.haskell.org/packages/archive/base/latest/doc/html/System-IO.html#v:openTempFile>`_\  を使う
+
+.. code-block:: haskell
+
+    import System.Environment
+    import System.IO
+    
+    main :: IO ()
+    main = do
+      (dir:prefix:_) <- getArgs
+      (filePath,h) <- openTempFile dir prefix
+      putStrLn filePath
+
 レシピ7.6 プログラムの内部にファイルを格納する
 -----------------------------------------------
 

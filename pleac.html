@@ -130,6 +130,18 @@
 </div>
 <div class="section" id="id6">
 <h3>レシピ7.5 一時ファイルを作成する<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch07_06.htm">Creating Temporary Files</a></p>
+<p><a class="reference external" href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/System-IO.html#v:openTempFile">openTempFile</a> を使う</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+<span class="kr">import</span> <span class="nn">System.IO</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">dir</span><span class="kt">:</span><span class="n">prefix</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="p">(</span><span class="n">filePath</span><span class="p">,</span><span class="n">h</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">openTempFile</span> <span class="n">dir</span> <span class="n">prefix</span>
+  <span class="n">putStrLn</span> <span class="n">filePath</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id7">
 <h3>レシピ7.6 プログラムの内部にファイルを格納する<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
