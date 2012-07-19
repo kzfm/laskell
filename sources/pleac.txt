@@ -32,6 +32,8 @@ openFileを使う
 レシピ7.3 ファイル名に含まれるチルダを展開する
 ----------------------------------------------
 
+`Expanding Tildes in Filenames <http://docstore.mik.ua/orelly/perl/cookbook/ch07_04.htm>`_
+ 
 getpwnamがみつからなかったので書いた。
 
 .. code-block:: haskell
@@ -65,6 +67,22 @@ getpwnamがみつからなかったので書いた。
 
 レシピ7.4 エラーをファイル名で報告する
 ---------------------------------------
+
+`Making Perl Report Filenames in Errors <http://docstore.mik.ua/orelly/perl/cookbook/ch07_05.htm>`_
+
+エラーの内容を出力してないのでこれは駄目だな
+
+.. code-block:: haskell
+
+    import System.Environment
+    import Control.Exception
+    import Prelude hiding (catch)
+    import System.Exit
+    
+    main = do
+      (file:_) <- getArgs
+      catch (putStr =<< readFile file) $
+                \e -> return (e::SomeException) >> print ("Error on reading file: " ++ file)
 
 レシピ7.5 一時ファイルを作成する
 ---------------------------------

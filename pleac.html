@@ -81,6 +81,7 @@
 </div>
 <div class="section" id="id4">
 <h3>レシピ7.3 ファイル名に含まれるチルダを展開する<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch07_04.htm">Expanding Tildes in Filenames</a></p>
 <p>getpwnamがみつからなかったので書いた。</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">Data.List.Split</span>
 <span class="kr">import</span> <span class="nn">Control.Applicative</span>
@@ -113,6 +114,19 @@
 </div>
 <div class="section" id="id5">
 <h3>レシピ7.4 エラーをファイル名で報告する<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch07_05.htm">Making Perl Report Filenames in Errors</a></p>
+<p>エラーの内容を出力してないのでこれは駄目だな</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Environment</span>
+<span class="kr">import</span> <span class="nn">Control.Exception</span>
+<span class="kr">import</span> <span class="nn">Prelude</span> <span class="k">hiding</span> <span class="p">(</span><span class="nf">catch</span><span class="p">)</span>
+<span class="kr">import</span> <span class="nn">System.Exit</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">file</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="n">catch</span> <span class="p">(</span><span class="n">putStr</span> <span class="o">=&lt;&lt;</span> <span class="n">readFile</span> <span class="n">file</span><span class="p">)</span> <span class="o">$</span>
+            <span class="nf">\</span><span class="n">e</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">e</span><span class="ow">::</span><span class="kt">SomeException</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">print</span> <span class="p">(</span><span class="s">&quot;Error on reading file: &quot;</span> <span class="o">++</span> <span class="n">file</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id6">
 <h3>レシピ7.5 一時ファイルを作成する<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
