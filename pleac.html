@@ -81,6 +81,35 @@
 </div>
 <div class="section" id="id4">
 <h3>レシピ7.3 ファイル名に含まれるチルダを展開する<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>getpwnamがみつからなかったので書いた。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">Data.List.Split</span>
+<span class="kr">import</span> <span class="nn">Control.Applicative</span>
+<span class="kr">import</span> <span class="nn">Text.Regex</span>
+<span class="kr">import</span> <span class="nn">System.Environment</span>
+
+<span class="nf">getpwnam</span> <span class="n">username</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="n">passwds</span> <span class="ow">&lt;-</span> <span class="n">map</span> <span class="p">(</span><span class="n">splitOn</span> <span class="s">&quot;:&quot;</span><span class="p">)</span> <span class="o">&lt;$&gt;</span> <span class="n">lines</span> <span class="o">&lt;$&gt;</span> <span class="n">readFile</span> <span class="s">&quot;/etc/passwd&quot;</span>
+  <span class="n">return</span> <span class="p">(</span><span class="n">filter</span> <span class="p">(</span><span class="nf">\</span><span class="n">line</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">line</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span><span class="o">==</span><span class="n">username</span><span class="p">)</span> <span class="n">passwds</span><span class="p">)</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">path</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="kr">case</span> <span class="n">matchRegexAll</span> <span class="p">(</span><span class="n">mkRegex</span> <span class="s">&quot;^~([^/]*)&quot;</span><span class="p">)</span> <span class="n">path</span> <span class="kr">of</span>
+    <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="n">putStrLn</span> <span class="n">path</span>
+    <span class="kt">Just</span> <span class="p">(</span><span class="kr">_</span><span class="p">,</span><span class="n">uhome</span><span class="p">,</span><span class="n">subdir</span><span class="p">,</span><span class="n">cs</span><span class="p">)</span> <span class="ow">-&gt;</span>
+        <span class="kr">if</span> <span class="n">length</span> <span class="n">cs</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">length</span> <span class="p">(</span><span class="n">cs</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span>
+        <span class="kr">then</span> <span class="kr">do</span>
+          <span class="n">dir</span> <span class="ow">&lt;-</span> <span class="n">getpwnam</span> <span class="p">(</span><span class="n">cs</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span>
+          <span class="kr">if</span> <span class="p">(</span><span class="n">length</span> <span class="n">dir</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+          <span class="kr">then</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="p">((</span><span class="n">dir</span><span class="o">!!</span><span class="mi">0</span><span class="p">)</span><span class="o">!!</span><span class="mi">5</span><span class="p">)</span> <span class="o">++</span> <span class="n">subdir</span>
+          <span class="kr">else</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="s">&quot;Error: &quot;</span> <span class="o">++</span> <span class="n">uhome</span> <span class="o">++</span> <span class="s">&quot; not found&quot;</span>
+        <span class="kr">else</span> <span class="kr">do</span>
+          <span class="n">homedir</span> <span class="ow">&lt;-</span> <span class="n">lookup</span> <span class="s">&quot;HOME&quot;</span> <span class="o">&lt;$&gt;</span> <span class="n">getEnvironment</span>
+          <span class="kr">case</span> <span class="n">homedir</span> <span class="kr">of</span>
+            <span class="kt">Just</span> <span class="n">home</span> <span class="ow">-&gt;</span> <span class="n">putStrLn</span> <span class="o">$</span> <span class="n">home</span> <span class="o">++</span> <span class="n">subdir</span>
+            <span class="kt">Nothing</span> <span class="ow">-&gt;</span> <span class="n">putStrLn</span> <span class="s">&quot;Error: Env[HOME] not found&quot;</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id5">
 <h3>レシピ7.4 エラーをファイル名で報告する<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>

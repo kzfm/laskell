@@ -32,6 +32,37 @@ openFileを使う
 レシピ7.3 ファイル名に含まれるチルダを展開する
 ----------------------------------------------
 
+getpwnamがみつからなかったので書いた。
+
+.. code-block:: haskell
+
+    import Data.List.Split
+    import Control.Applicative
+    import Text.Regex
+    import System.Environment
+    
+    getpwnam username = do
+      passwds <- map (splitOn ":") <$> lines <$> readFile "/etc/passwd" 
+      return (filter (\line -> (line!!0)==username) passwds)
+     
+    main :: IO ()
+    main = do
+      (path:_) <- getArgs
+      case matchRegexAll (mkRegex "^~([^/]*)") path of
+        Nothing -> putStrLn path
+        Just (_,uhome,subdir,cs) -> 
+            if length cs == 1 && length (cs!!0) /= 0
+            then do
+              dir <- getpwnam (cs!!0) 
+              if (length dir) == 1 
+              then putStrLn $ ((dir!!0)!!5) ++ subdir
+              else putStrLn $ "Error: " ++ uhome ++ " not found"
+            else do
+              homedir <- lookup "HOME" <$> getEnvironment
+              case homedir of
+                Just home -> putStrLn $ home ++ subdir
+                Nothing -> putStrLn "Error: Env[HOME] not found"
+
 レシピ7.4 エラーをファイル名で報告する
 ---------------------------------------
 
