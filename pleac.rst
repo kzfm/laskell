@@ -105,6 +105,10 @@ getpwnamがみつからなかったので書いた。
 レシピ7.6 プログラムの内部にファイルを格納する
 -----------------------------------------------
 
+`Storing Files Inside Your Program Text <http://docstore.mik.ua/orelly/perl/cookbook/ch07_07.htm>`_ 
+
+これは出来ないんじゃないのかな
+
 レシピ7.7 フィルタを書く
 -------------------------
 
