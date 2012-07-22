@@ -410,6 +410,38 @@ reverseする
 レシピ9.1 タイムスタンプを取得／設定する
 -----------------------------------------
 
+`Getting and Setting Timestamps <http://docstore.mik.ua/orelly/perl/cookbook/ch09_02.htm>`_
+
+時間の変換がちょっと面倒だ。
+
+.. code-block:: haskell
+
+    import System.Posix.Files
+    import System.Time
+    import System.Posix.Types
+    import System.Environment
+    
+    getTimes :: FilePath -> IO (ClockTime, ClockTime)
+    getTimes fp =
+        do stat <- getFileStatus fp
+           return (toct (accessTime stat),
+                   toct (modificationTime stat))
+    
+    toct :: EpochTime -> ClockTime
+    toct et = TOD (truncate (toRational et)) 0
+    
+    main :: IO ()
+    main = do
+      (file:_) <- getArgs
+      (atime, mtime) <- getTimes file
+      toCalendarTime atime >>= print
+      toCalendarTime mtime >>= print
+
+参考
+
+- `File Modification Times  <http://book.realworldhaskell.org/read/systems-programming-in-haskell.html>`_ 
+- `System.Time <http://hackage.haskell.org/packages/archive/old-time/latest/doc/html/System-Time.html#t:ClockTime>`_ 
+
 レシピ9.2 ファイルを削除する
 -----------------------------
 

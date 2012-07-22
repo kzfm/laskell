@@ -412,6 +412,35 @@
 <h2>9 章    ディレクトリ<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id38">
 <h3>レシピ9.1 タイムスタンプを取得／設定する<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="http://docstore.mik.ua/orelly/perl/cookbook/ch09_02.htm">Getting and Setting Timestamps</a></p>
+<p>時間の変換がちょっと面倒だ。</p>
+<div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">System.Posix.Files</span>
+<span class="kr">import</span> <span class="nn">System.Time</span>
+<span class="kr">import</span> <span class="nn">System.Posix.Types</span>
+<span class="kr">import</span> <span class="nn">System.Environment</span>
+
+<span class="nf">getTimes</span> <span class="ow">::</span> <span class="kt">FilePath</span> <span class="ow">-&gt;</span> <span class="kt">IO</span> <span class="p">(</span><span class="kt">ClockTime</span><span class="p">,</span> <span class="kt">ClockTime</span><span class="p">)</span>
+<span class="nf">getTimes</span> <span class="n">fp</span> <span class="ow">=</span>
+    <span class="kr">do</span> <span class="n">stat</span> <span class="ow">&lt;-</span> <span class="n">getFileStatus</span> <span class="n">fp</span>
+       <span class="n">return</span> <span class="p">(</span><span class="n">toct</span> <span class="p">(</span><span class="n">accessTime</span> <span class="n">stat</span><span class="p">),</span>
+               <span class="n">toct</span> <span class="p">(</span><span class="n">modificationTime</span> <span class="n">stat</span><span class="p">))</span>
+
+<span class="nf">toct</span> <span class="ow">::</span> <span class="kt">EpochTime</span> <span class="ow">-&gt;</span> <span class="kt">ClockTime</span>
+<span class="nf">toct</span> <span class="n">et</span> <span class="ow">=</span> <span class="kt">TOD</span> <span class="p">(</span><span class="n">truncate</span> <span class="p">(</span><span class="n">toRational</span> <span class="n">et</span><span class="p">))</span> <span class="mi">0</span>
+
+<span class="nf">main</span> <span class="ow">::</span> <span class="kt">IO</span> <span class="nb">()</span>
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+  <span class="p">(</span><span class="n">file</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getArgs</span>
+  <span class="p">(</span><span class="n">atime</span><span class="p">,</span> <span class="n">mtime</span><span class="p">)</span> <span class="ow">&lt;-</span> <span class="n">getTimes</span> <span class="n">file</span>
+  <span class="n">toCalendarTime</span> <span class="n">atime</span> <span class="o">&gt;&gt;=</span> <span class="n">print</span>
+  <span class="n">toCalendarTime</span> <span class="n">mtime</span> <span class="o">&gt;&gt;=</span> <span class="n">print</span>
+</pre></div>
+</div>
+<p>参考</p>
+<ul class="simple">
+<li><a class="reference external" href="http://book.realworldhaskell.org/read/systems-programming-in-haskell.html">File Modification Times</a></li>
+<li><a class="reference external" href="http://hackage.haskell.org/packages/archive/old-time/latest/doc/html/System-Time.html#t:ClockTime">System.Time</a></li>
+</ul>
 </div>
 <div class="section" id="id39">
 <h3>レシピ9.2 ファイルを削除する<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
