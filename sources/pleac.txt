@@ -445,8 +445,20 @@ reverseする
 レシピ9.2 ファイルを削除する
 -----------------------------
 
+`Deleting a File <http://docstore.mik.ua/orelly/perl/cookbook/ch09_03.htm>`_ 
+
+`System.Diirectory <http://hackage.haskell.org/packages/archive/directory/latest/doc/html/System-Directory.html>`_\ のremoveFileを使う
+
+.. code-block:: haskell
+
+   removeFile "test.pl"
+
 レシピ9.3 ファイルをコピーまたは移動する
 -----------------------------------------
+
+`Copying or Moving a File <http://docstore.mik.ua/orelly/perl/cookbook/ch09_04.htm>`_ 
+
+`System.Diirectory <http://hackage.haskell.org/packages/archive/directory/latest/doc/html/System-Directory.html>`_\ のrenameFileかcopyFileを使う
 
 レシピ9.4 同じファイルに2つの異なる名前をつける
 ------------------------------------------------
@@ -454,20 +466,42 @@ reverseする
 レシピ9.5 ディレクトリ内のすべてのファイルを処理する
 -----------------------------------------------------
 
+`Processing All Files in a Directory <http://docstore.mik.ua/orelly/perl/cookbook/ch09_06.htm>`_ 
+
+`System.Diirectory <http://hackage.haskell.org/packages/archive/directory/latest/doc/html/System-Directory.html>`_\ getDirectoryContentsをつかう
+
+
 レシピ9.6 パターンにマッチするファイル名のリストを取得する（グロブする）
 -------------------------------------------------------------------------
+
+`Globbing, or Getting a List of Filenames Matching a Pattern <http://docstore.mik.ua/orelly/perl/cookbook/ch09_07.htm>`_ 
+
+`Glob package <http://hackage.haskell.org/package/Glob>`_\ を使えばいい
 
 レシピ9.7 ディレクトリ内のすべてのファイルを再帰的に処理する
 -------------------------------------------------------------
 
+`Processing All Files in a Directory Recursively <http://docstore.mik.ua/orelly/perl/cookbook/ch09_08.htm>`_ 
+
+ライブラリにはみつからないが\ `RWH <http://book.realworldhaskell.org/read/io-case-study-a-library-for-searching-the-filesystem.html>`_\ に書いてある
+
 レシピ9.8 ディレクトリとその中身を削除する
 -------------------------------------------
+
+`Removing a Directory and Its Contents <http://docstore.mik.ua/orelly/perl/cookbook/ch09_09.htm>`_ 
+
+`System.Diirectory <http://hackage.haskell.org/packages/archive/directory/latest/doc/html/System-Directory.html>`_\ のremoveDirectoryRecursiveを使う
 
 レシピ9.9 ファイルをリネームする
 ---------------------------------
 
+
 レシピ9.10 ファイル名をその構成要素に分割する
 ---------------------------------------------
+
+`Splitting a Filename into Its Component Parts <http://docstore.mik.ua/orelly/perl/cookbook/ch09_11.htm>`_
+ 
+`System.FilePath.Posix <http://hackage.haskell.org/packages/archive/filepath/1.3.0.0/doc/html/System-FilePath-Posix.html#v:extSeparator>`_ 
 
 プログラム9.1 symirror
 -----------------------------
