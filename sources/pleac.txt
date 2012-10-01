@@ -803,8 +803,54 @@ reverseする
 レシピ18.1 単純なDNSルックアップ
 --------------------------------
 
+`Simple DNS Lookups <http://docstore.mik.ua/orelly/perl/cookbook/ch18_02.htm>`_
+
+標準ライブラリがあるのでそれを使えばいい。
+
+.. code-block:: haskell
+
+    Prelude> :m Network.BSD Network.Socket
+    Prelude Network.Socket Network.BSD> getHostByName "google.co.jp" >>= print . hostAddresses
+    [3102440778,3085663562,3219881290]
+    Prelude Network.Socket Network.BSD Control.Monad> mapM inet_ntoa =<< liftM hostAddresses (getHostByName "google.co.jp")
+    ["173.194.38.95","173.194.38.88","173.194.38.87"]
+    Prelude Network.Socket Network.BSD> inet_addr "74.125.235.184" >>= getHostByAddr AF_INET
+    HostEntry {hostName = "nrt19s12-in-f24.1e100.net", 
+               hostAliases = ["184.235.125.74.in-addr.arpa"], 
+               hostFamily = AF_INET, hostAddresses = [3102440778]
+              }
+
+
 レシピ18.2 FTPクライアントになる
 --------------------------------
+
+`Being an FTP Client <http://docstore.mik.ua/orelly/perl/cookbook/ch18_03.htm>`_
+
+`Network.FTP.Client <http://hackage.haskell.org/packages/archive/ftphs/1.0.5/doc/html/Network-FTP-Client.html>`_\ を使う
+
+.. code-block:: haskell
+
+    Prelude> :m  Network.FTP.Client
+    Prelude Network.FTP.Client>  loginAnon h
+    (230,["Login successful."])
+    Prelude Network.FTP.Client> cwd h "/pub/linux/kernel/Historic"
+    (250,["Directory successfully changed."])
+    Prelude Network.FTP.Client> nlst h Nothing >>= putStrLn . unlines
+    linux-0.01.tar.gz
+    linux-0.01.tar.gz.sign
+    linux-0.01.tar.sign
+    old-versions
+    v0.99
+    
+    Prelude Network.FTP.Client> getbinary h "linux-0.01.tar.gz.sign" >>= putStrLn . fst
+    -----BEGIN PGP SIGNATURE-----
+    Version: GnuPG v1.0.0 (GNU/Linux)
+    Comment: See http://www.kernel.org/signature.html for info
+    
+    iD8DBQA54rf0yGugalF9Dw4RAqelAJ9lafFni4f/QyJ2IqDXzW2nz/ZIogCfRPtg
+    uYpWffOhkyByfhUt8Lcelec=
+    =KnLA
+    -----END PGP SIGNATURE-----
 
 レシピ18.3 メールを送信する
 ---------------------------
