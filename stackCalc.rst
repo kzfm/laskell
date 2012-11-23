@@ -351,22 +351,22 @@ Stateモナド
                 in runState (k a) s'
 
 >>=は先に実装したbindのことですね。最初に考えていたスタックはIntegerの
-リストに別名を付けたものですが、今回のStackはState [Integer] Integer型
+リストに別名を付けたものですが、OpはState [Integer] Integer型
 に別名をつけたものです(そしてこれは実際には関数であることに注意)
 
 .. code-block:: haskell
 
     import Control.Monad.State
     
-    type Stack = State [Integer] Integer
+    type Op = State [Integer] Integer
     
-    push :: Integer -> Stack
+    push :: Integer -> Op
     push c = get >>= \cs -> put (c:cs) >>= \_ -> return c
     
-    pop :: Stack
+    pop :: Op
     pop = get >>= \cs -> put (tail cs) >>= \_ -> return (head cs)
     
-    calc :: (Integer -> Integer -> Integer) -> Stack
+    calc :: (Integer -> Integer -> Integer) -> Op
     calc op = pop >>= \i1 -> pop >>= \i2 -> push (op i1 i2)
     
     add = calc (+)
@@ -374,10 +374,10 @@ Stateモナド
     mul = calc (*)
     dvv = calc div
     
-    poppp :: Stack
+    poppp :: Op
     poppp = pop >>= \_ -> pop >>= \_ -> pop
     
-    pushshop :: Stack
+    pushshop :: Op
     pushshop = (push 1) >>= \_ -> (push 2) >>= \_  -> pop
 
 pushとpopはMonadStateクラスのメソッドであるputとgetを使って書きなおして
@@ -390,21 +390,21 @@ pushとpopはMonadStateクラスのメソッドであるputとgetを使って書
 
     import Control.Monad.State
     
-    type Stack = State [Integer] Integer
+    type Op = State [Integer] Integer
     
-    push :: Integer -> Stack
+    push :: Integer -> Op
     push c = do 
       cs <- get
       put (c:cs)
       return c
     
-    pop :: Stack
+    pop :: Op
     pop = do
       cs <- get
       put (tail cs)
       return (head cs)
     
-    calc :: (Integer -> Integer -> Integer) -> Stack
+    calc :: (Integer -> Integer -> Integer) -> Op
     calc op = do
       i1 <- pop
       i2 <- pop
@@ -415,10 +415,10 @@ pushとpopはMonadStateクラスのメソッドであるputとgetを使って書
     mul = calc (*)
     dvv = calc div
     
-    poppp :: Stack
+    poppp :: Op
     poppp = do pop; pop; pop
     
-    pushshop :: Stack
+    pushshop :: Op
     pushshop = do push 1; push 2; pop
 
 一見手続き型の言語で書いてるようにみえますね。でも気をつけてください、

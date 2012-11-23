@@ -336,19 +336,19 @@ stackが明示的にでてこなくなりました。単にbindでpushとかpop�
 </pre></div>
 </div>
 <p>&gt;&gt;=は先に実装したbindのことですね。最初に考えていたスタックはIntegerの
-リストに別名を付けたものですが、今回のStackはState [Integer] Integer型
+リストに別名を付けたものですが、OpはState [Integer] Integer型
 に別名をつけたものです(そしてこれは実際には関数であることに注意)</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">Control.Monad.State</span>
 
-<span class="kr">type</span> <span class="kt">Stack</span> <span class="ow">=</span> <span class="kt">State</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span> <span class="kt">Integer</span>
+<span class="kr">type</span> <span class="kt">Op</span> <span class="ow">=</span> <span class="kt">State</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span> <span class="kt">Integer</span>
 
-<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Op</span>
 <span class="nf">push</span> <span class="n">c</span> <span class="ow">=</span> <span class="n">get</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">cs</span> <span class="ow">-&gt;</span> <span class="n">put</span> <span class="p">(</span><span class="n">c</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="n">c</span>
 
-<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Op</span>
 <span class="nf">pop</span> <span class="ow">=</span> <span class="n">get</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">cs</span> <span class="ow">-&gt;</span> <span class="n">put</span> <span class="p">(</span><span class="n">tail</span> <span class="n">cs</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">return</span> <span class="p">(</span><span class="n">head</span> <span class="n">cs</span><span class="p">)</span>
 
-<span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Op</span>
 <span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">i1</span> <span class="ow">-&gt;</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="n">i2</span> <span class="ow">-&gt;</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span>
 
 <span class="nf">add</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span>
@@ -356,10 +356,10 @@ stackが明示的にでてこなくなりました。単にbindでpushとかpop�
 <span class="nf">mul</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span>
 <span class="nf">dvv</span> <span class="ow">=</span> <span class="n">calc</span> <span class="n">div</span>
 
-<span class="nf">poppp</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">poppp</span> <span class="ow">::</span> <span class="kt">Op</span>
 <span class="nf">poppp</span> <span class="ow">=</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">pop</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="n">pop</span>
 
-<span class="nf">pushshop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pushshop</span> <span class="ow">::</span> <span class="kt">Op</span>
 <span class="nf">pushshop</span> <span class="ow">=</span> <span class="p">(</span><span class="n">push</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">push</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="nf">\</span><span class="kr">_</span>  <span class="ow">-&gt;</span> <span class="n">pop</span>
 </pre></div>
 </div>
@@ -369,21 +369,21 @@ stackが明示的にでてこなくなりました。単にbindでpushとかpop�
 さらに書きなおしてみましょう</p>
 <div class="highlight-haskell"><div class="highlight"><pre><span class="kr">import</span> <span class="nn">Control.Monad.State</span>
 
-<span class="kr">type</span> <span class="kt">Stack</span> <span class="ow">=</span> <span class="kt">State</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span> <span class="kt">Integer</span>
+<span class="kr">type</span> <span class="kt">Op</span> <span class="ow">=</span> <span class="kt">State</span> <span class="p">[</span><span class="kt">Integer</span><span class="p">]</span> <span class="kt">Integer</span>
 
-<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">push</span> <span class="ow">::</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Op</span>
 <span class="nf">push</span> <span class="n">c</span> <span class="ow">=</span> <span class="kr">do</span>
   <span class="n">cs</span> <span class="ow">&lt;-</span> <span class="n">get</span>
   <span class="n">put</span> <span class="p">(</span><span class="n">c</span><span class="kt">:</span><span class="n">cs</span><span class="p">)</span>
   <span class="n">return</span> <span class="n">c</span>
 
-<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pop</span> <span class="ow">::</span> <span class="kt">Op</span>
 <span class="nf">pop</span> <span class="ow">=</span> <span class="kr">do</span>
   <span class="n">cs</span> <span class="ow">&lt;-</span> <span class="n">get</span>
   <span class="n">put</span> <span class="p">(</span><span class="n">tail</span> <span class="n">cs</span><span class="p">)</span>
   <span class="n">return</span> <span class="p">(</span><span class="n">head</span> <span class="n">cs</span><span class="p">)</span>
 
-<span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Stack</span>
+<span class="nf">calc</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span> <span class="ow">-&gt;</span> <span class="kt">Integer</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="kt">Op</span>
 <span class="nf">calc</span> <span class="n">op</span> <span class="ow">=</span> <span class="kr">do</span>
   <span class="n">i1</span> <span class="ow">&lt;-</span> <span class="n">pop</span>
   <span class="n">i2</span> <span class="ow">&lt;-</span> <span class="n">pop</span>
@@ -394,10 +394,10 @@ stackが明示的にでてこなくなりました。単にbindでpushとかpop�
 <span class="nf">mul</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span>
 <span class="nf">dvv</span> <span class="ow">=</span> <span class="n">calc</span> <span class="n">div</span>
 
-<span class="nf">poppp</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">poppp</span> <span class="ow">::</span> <span class="kt">Op</span>
 <span class="nf">poppp</span> <span class="ow">=</span> <span class="kr">do</span> <span class="n">pop</span><span class="p">;</span> <span class="n">pop</span><span class="p">;</span> <span class="n">pop</span>
 
-<span class="nf">pushshop</span> <span class="ow">::</span> <span class="kt">Stack</span>
+<span class="nf">pushshop</span> <span class="ow">::</span> <span class="kt">Op</span>
 <span class="nf">pushshop</span> <span class="ow">=</span> <span class="kr">do</span> <span class="n">push</span> <span class="mi">1</span><span class="p">;</span> <span class="n">push</span> <span class="mi">2</span><span class="p">;</span> <span class="n">pop</span>
 </pre></div>
 </div>
