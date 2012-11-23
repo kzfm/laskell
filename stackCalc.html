@@ -179,9 +179,8 @@ popの2つのメソッドを持っていればいいですね。</p>
     <span class="kr">let</span>
         <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack</span>
         <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack1</span>
-        <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>  <span class="ow">=</span> <span class="n">push</span> <span class="p">(</span><span class="n">i1</span><span class="o">+</span><span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
     <span class="kr">in</span>
-      <span class="p">((</span><span class="n">i1</span><span class="o">+</span><span class="n">i2</span><span class="p">),</span> <span class="n">stack3</span><span class="p">)</span>
+        <span class="n">push</span> <span class="p">(</span><span class="n">i1</span><span class="o">+</span><span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
 </pre></div>
 </div>
 <p>これはうまく動きます</p>
@@ -198,9 +197,8 @@ popの2つのメソッドを持っていればいいですね。</p>
     <span class="kr">let</span>
         <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">stack1</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack</span>
         <span class="p">(</span><span class="n">i2</span><span class="p">,</span> <span class="n">stack2</span><span class="p">)</span> <span class="ow">=</span> <span class="n">pop</span> <span class="n">stack1</span>
-        <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="n">stack3</span><span class="p">)</span>  <span class="ow">=</span> <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
     <span class="kr">in</span>
-      <span class="p">((</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">),</span> <span class="n">stack3</span><span class="p">)</span>
+        <span class="n">push</span> <span class="p">(</span><span class="n">op</span> <span class="n">i1</span> <span class="n">i2</span><span class="p">)</span> <span class="n">stack2</span>
 
 <span class="nf">add</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">+</span><span class="p">)</span>
 <span class="nf">sub</span> <span class="ow">=</span> <span class="n">calc</span> <span class="p">(</span><span class="o">-</span><span class="p">)</span>

@@ -156,9 +156,8 @@ haskellでは破壊的な操作ができないので、スタックから要素�
         let
             (i1, stack1) = pop stack
             (i2, stack2) = pop stack1
-            (_, stack3)  = push (i1+i2) stack2
         in
-          ((i1+i2), stack3)
+	    push (i1+i2) stack2
 
 これはうまく動きます
 
@@ -179,9 +178,8 @@ haskellでは破壊的な操作ができないので、スタックから要素�
         let
             (i1, stack1) = pop stack
             (i2, stack2) = pop stack1
-            (_, stack3)  = push (op i1 i2) stack2
         in
-          ((op i1 i2), stack3)
+	    push (op i1 i2) stack2
     
     add = calc (+)
     sub = calc (-)
